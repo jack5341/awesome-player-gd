@@ -12,19 +12,19 @@ func physics_update(delta: float) -> void:
 		state_machine.change_state(fall_state)
 		return
 
-	if Input.is_action_just_pressed("ui_accept"):
+	if Input.is_action_just_pressed("awesome_player_move_jump"):
 		state_machine.change_state(jump_state)
 		return
 		
-	if not Input.is_action_pressed("sprint") or not player.can_sprint:
+	if not Input.is_action_pressed("awesome_player_move_sprint") or not player.can_sprint:
 		state_machine.change_state(walk_state)
 		return
 		
-	if Input.is_action_pressed("crouch"):
+	if Input.is_action_pressed("awesome_player_move_crouch"):
 		state_machine.change_state(crouch_state)
 		return
 
-	var input_dir := Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
+	var input_dir := Input.get_vector("awesome_player_move_left", "awesome_player_move_right", "awesome_player_move_up", "awesome_player_move_down")
 	if input_dir == Vector2.ZERO:
 		state_machine.change_state(idle_state)
 		return

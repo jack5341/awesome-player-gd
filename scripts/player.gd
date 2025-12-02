@@ -105,6 +105,7 @@ var death_count: int = 0
 @onready var camera: Camera3D = $CameraPivot/CameraSpringArm/PlayerCamera
 @onready var camera_pivot: Node3D = $CameraPivot
 @onready var camera_spring_arm: SpringArm3D = $CameraPivot/CameraSpringArm
+@onready var inventory: InventoryManager = $InventoryManager
 
 func _ready() -> void:
 	if mouse_capture_enabled:
@@ -112,20 +113,31 @@ func _ready() -> void:
 	
 	_setup_camera()
 	_setup_state_machine()
+	_setup_inventory()
+
+func _setup_inventory() -> void:
+	# Auto-attach script if missing
+	if not inventory.get_script():
+		inventory.set_script(load("res: / / scripts / inventory / inventory_manager.gd"))
+	
+	# Connect signals
+	inventory.item_added.connect(_on_item_added)
+	inventory.item_removed.connect(_on_item_removed)
+	inventory.item_used.connect(_on_item_used)
 
 func _setup_state_machine() -> void:
 	# Auto-attach scripts if they are missing (Scalability helper)
 	if not state_machine.get_script():
-		state_machine.set_script(load("res://scripts/state_machine.gd"))
+		state_machine.set_script(load("res: / / scripts / state_machine.gd"))
 	
 	var states_map = {
-		"Idle": "res://scripts/states/idle.gd",
-		"Walk": "res://scripts/states/walk.gd",
-		"Sprint": "res://scripts/states/sprint.gd",
-		"Jump": "res://scripts/states/jump.gd",
-		"Fall": "res://scripts/states/fall.gd",
-		"Crouch": "res://scripts/states/crouch.gd",
-		"Reload": "res://scripts/states/reload.gd"
+		"Idle": "res: / / scripts / states / idle.gd",
+		"Walk": "res: / / scripts / states / walk.gd",
+		"Sprint": "res: / / scripts / states / sprint.gd",
+		"Jump": "res: / / scripts / states / jump.gd",
+		"Fall": "res: / / scripts / states / fall.gd",
+		"Crouch": "res: / / scripts / states / crouch.gd",
+		"Reload": "res: / / scripts / states / reload.gd"
 	}
 	
 	for child in state_machine.get_children():
@@ -221,3 +233,26 @@ func _handle_interaction() -> void:
 		# You could emit a signal here or update UI
 	else:
 		current_interactable = null
+	
+	# Handle interaction input
+	if Input.is_action_just_pressed("awesome_player_interact") and current_interactable:
+		_interact_with_object(current_interactable)
+
+func _interact_with_object(object: Node) -> void:
+	# Override or connect to this for custom interaction logic
+	if object.has_method("interact"):
+		object.interact(self)
+
+## Inventory signal handlers
+func _on_item_added(item: InventoryItem, slot: int) -> void:
+	pass # Override or connect to this for UI updates
+
+func _on_item_removed(item: InventoryItem, slot: int) -> void:
+	pass # Override or connect to this for UI updates
+
+func _on_item_used(item: InventoryItem) -> void:
+	# Handle item usage effects
+	if item.data.metadata.has("heal_amount"):
+		current_health = min(current_health + float(item.data.metadata["heal_amount"]), max_health)
+	if item.data.metadata.has("stamina_amount"):
+		current_stamina = min(current_stamina + float(item.data.metadata["stamina_amount"]), max_stamina)

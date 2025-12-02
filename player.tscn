@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://bfcju82um8mqx"]
+[gd_scene load_steps=11 format=3 uid="uid://bfcju82um8mqx"]
 
 [ext_resource type="Script" uid="uid://b1xn1rfps7sfc" path="res://scripts/player.gd" id="1_4flbx"]
 [ext_resource type="Script" uid="uid://da2ss1g4m7ld3" path="res://scripts/state_machine.gd" id="2_state_machine"]
@@ -9,6 +9,7 @@
 [ext_resource type="Script" uid="uid://cv8avlcy5rlc8" path="res://scripts/states/fall.gd" id="7_fall"]
 [ext_resource type="Script" uid="uid://sy2awyypks8g" path="res://scripts/states/jump.gd" id="8_jump"]
 [ext_resource type="Script" uid="uid://coam48qau17k2" path="res://scripts/states/reload.gd" id="9_reload"]
+[ext_resource type="Script" uid="uid://b43mq2e7pgssi" path="res://scripts/inventory/inventory_manager.gd" id="10_inventory"]
 
 [node name="Player" type="CharacterBody3D"]
 script = ExtResource("1_4flbx")
@@ -73,3 +74,4 @@ margin = 0.5
 [node name="PlayerCamera" type="Camera3D" parent="CameraPivot/CameraSpringArm"]
 
 [node name="InventoryManager" type="Node" parent="."]
+script = ExtResource("10_inventory")

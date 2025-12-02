@@ -18,12 +18,12 @@ func physics_update(delta: float) -> void:
 		state_machine.change_state(fall_state)
 		return
 
-	if not Input.is_action_pressed("crouch"):
+	if not Input.is_action_pressed("awesome_player_move_crouch"):
 		# Check if can stand up (raycast up)
 		state_machine.change_state(idle_state)
 		return
 	
-	var input_dir := Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
+	var input_dir := Input.get_vector("awesome_player_move_left", "awesome_player_move_right", "awesome_player_move_up", "awesome_player_move_down")
 	var direction := (player.transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
 	
 	if direction:
