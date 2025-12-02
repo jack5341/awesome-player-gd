@@ -1,0 +1,22 @@
+[gd_scene load_steps=2 format=3 uid="uid://bfcju82um8mqx"]
+
+[ext_resource type="Script" uid="uid://b1xn1rfps7sfc" path="res://scripts/player.gd" id="1_4flbx"]
+
+[node name="Player" type="CharacterBody3D" unique_id=160019031]
+script = ExtResource("1_4flbx")
+
+[node name="PlayerStateMachine" type="Node" parent="." unique_id=1944431343]
+
+[node name="Idle" type="Node" parent="PlayerStateMachine" unique_id=81895968]
+
+[node name="Walk" type="Node" parent="PlayerStateMachine" unique_id=611549733]
+
+[node name="Sprint" type="Node" parent="PlayerStateMachine" unique_id=596617628]
+
+[node name="Crouch" type="Node" parent="PlayerStateMachine" unique_id=296485043]
+
+[node name="Fall" type="Node" parent="PlayerStateMachine" unique_id=1662794828]
+
+[node name="Jump" type="Node" parent="PlayerStateMachine" unique_id=1983871011]
+
+[node name="Reload" type="Node" parent="PlayerStateMachine" unique_id=2138650891]
