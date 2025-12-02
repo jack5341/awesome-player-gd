@@ -1,30 +1,30 @@
 [gd_scene load_steps=10 format=3 uid="uid://bfcju82um8mqx"]
 
 [ext_resource type="Script" uid="uid://b1xn1rfps7sfc" path="res://scripts/player.gd" id="1_4flbx"]
-[ext_resource type="Script" path="res://scripts/state_machine.gd" id="2_state_machine"]
-[ext_resource type="Script" path="res://scripts/states/idle.gd" id="3_idle"]
-[ext_resource type="Script" path="res://scripts/states/walk.gd" id="4_walk"]
-[ext_resource type="Script" path="res://scripts/states/sprint.gd" id="5_sprint"]
-[ext_resource type="Script" path="res://scripts/states/crouch.gd" id="6_crouch"]
-[ext_resource type="Script" path="res://scripts/states/fall.gd" id="7_fall"]
-[ext_resource type="Script" path="res://scripts/states/jump.gd" id="8_jump"]
-[ext_resource type="Script" path="res://scripts/states/reload.gd" id="9_reload"]
+[ext_resource type="Script" uid="uid://da2ss1g4m7ld3" path="res://scripts/state_machine.gd" id="2_state_machine"]
+[ext_resource type="Script" uid="uid://baa75wnax13vx" path="res://scripts/states/idle.gd" id="3_idle"]
+[ext_resource type="Script" uid="uid://bhxmo84t4w3bd" path="res://scripts/states/walk.gd" id="4_walk"]
+[ext_resource type="Script" uid="uid://c35g8epy7u15w" path="res://scripts/states/sprint.gd" id="5_sprint"]
+[ext_resource type="Script" uid="uid://6jkjtfe73j5l" path="res://scripts/states/crouch.gd" id="6_crouch"]
+[ext_resource type="Script" uid="uid://cv8avlcy5rlc8" path="res://scripts/states/fall.gd" id="7_fall"]
+[ext_resource type="Script" uid="uid://sy2awyypks8g" path="res://scripts/states/jump.gd" id="8_jump"]
+[ext_resource type="Script" uid="uid://coam48qau17k2" path="res://scripts/states/reload.gd" id="9_reload"]
 
-[node name="Player" type="CharacterBody3D" unique_id=160019031]
+[node name="Player" type="CharacterBody3D"]
 script = ExtResource("1_4flbx")
 
-[node name="PlayerStateMachine" type="Node" parent="." unique_id=1944431343]
+[node name="PlayerStateMachine" type="Node" parent="."]
 script = ExtResource("2_state_machine")
 initial_state = NodePath("Idle")
 
-[node name="Idle" type="Node" parent="PlayerStateMachine" unique_id=81895968]
+[node name="Idle" type="Node" parent="PlayerStateMachine"]
 script = ExtResource("3_idle")
 walk_state = NodePath("../Walk")
 jump_state = NodePath("../Jump")
 fall_state = NodePath("../Fall")
 crouch_state = NodePath("../Crouch")
 
-[node name="Walk" type="Node" parent="PlayerStateMachine" unique_id=611549733]
+[node name="Walk" type="Node" parent="PlayerStateMachine"]
 script = ExtResource("4_walk")
 idle_state = NodePath("../Idle")
 sprint_state = NodePath("../Sprint")
@@ -32,7 +32,7 @@ jump_state = NodePath("../Jump")
 fall_state = NodePath("../Fall")
 crouch_state = NodePath("../Crouch")
 
-[node name="Sprint" type="Node" parent="PlayerStateMachine" unique_id=596617628]
+[node name="Sprint" type="Node" parent="PlayerStateMachine"]
 script = ExtResource("5_sprint")
 idle_state = NodePath("../Idle")
 walk_state = NodePath("../Walk")
@@ -40,34 +40,36 @@ jump_state = NodePath("../Jump")
 fall_state = NodePath("../Fall")
 crouch_state = NodePath("../Crouch")
 
-[node name="Crouch" type="Node" parent="PlayerStateMachine" unique_id=296485043]
+[node name="Crouch" type="Node" parent="PlayerStateMachine"]
 script = ExtResource("6_crouch")
 idle_state = NodePath("../Idle")
 walk_state = NodePath("../Walk")
 fall_state = NodePath("../Fall")
 
-[node name="Fall" type="Node" parent="PlayerStateMachine" unique_id=1662794828]
+[node name="Fall" type="Node" parent="PlayerStateMachine"]
 script = ExtResource("7_fall")
 idle_state = NodePath("../Idle")
 walk_state = NodePath("../Walk")
 jump_state = NodePath("../Jump")
 
-[node name="Jump" type="Node" parent="PlayerStateMachine" unique_id=1983871011]
+[node name="Jump" type="Node" parent="PlayerStateMachine"]
 script = ExtResource("8_jump")
 fall_state = NodePath("../Fall")
 idle_state = NodePath("../Idle")
 walk_state = NodePath("../Walk")
 
-[node name="Reload" type="Node" parent="PlayerStateMachine" unique_id=2138650891]
+[node name="Reload" type="Node" parent="PlayerStateMachine"]
 script = ExtResource("9_reload")
 idle_state = NodePath("../Idle")
 walk_state = NodePath("../Walk")
 
-[node name="CameraPivot" type="Node3D" parent="." unique_id=384729102]
+[node name="CameraPivot" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0)
 
-[node name="CameraSpringArm" type="SpringArm3D" parent="CameraPivot" unique_id=495820192]
+[node name="CameraSpringArm" type="SpringArm3D" parent="CameraPivot"]
 spring_length = 5.0
 margin = 0.5
 
-[node name="PlayerCamera" type="Camera3D" parent="CameraPivot/CameraSpringArm" unique_id=506931203]
+[node name="PlayerCamera" type="Camera3D" parent="CameraPivot/CameraSpringArm"]
+
+[node name="InventoryManager" type="Node" parent="."]

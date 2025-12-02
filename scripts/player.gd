@@ -91,12 +91,6 @@ var is_network_authority: bool = false # Renamed to avoid shadowing Node.is_mult
 var is_dead: bool = false
 var death_count: int = 0
 
-@export_subgroup("Progression")
-@export var level: int = 1 ## Current player level
-@export var experience: float = 0.0 ## Current experience points accumulated
-@export var experience_to_next_level: float = 100.0 ## Experience points required to reach next level
-@export var skill_points: int = 0 ## Available skill points that can be spent on upgrades
-
 @export_subgroup("Audio")
 @export var walk_sound: AudioStreamPlayer3D ## Audio player for walking footstep sounds
 @export var run_sound: AudioStreamPlayer3D ## Audio player for running footstep sounds
