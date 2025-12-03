@@ -1,6 +1,9 @@
 class_name InventoryManager
 extends Node
 
+func _ready() -> void:
+	_initialize_inventory()
+
 signal inventory_changed()
 signal item_added(item: InventoryItem, slot: int)
 signal item_removed(item: InventoryItem, slot: int)
@@ -20,9 +23,6 @@ enum InventoryType {
 var items: Array[InventoryItem] = [] ## All items in inventory
 var grid: Array = [] ## 2D grid for grid-based inventory
 var current_weight: float = 0.0
-
-func _ready() -> void:
-	_initialize_inventory()
 
 func _initialize_inventory() -> void:
 	items.clear()
@@ -97,6 +97,7 @@ func remove_item(item: InventoryItem) -> bool:
 	if not item:
 		return false
 	
+	var item_weight = item.get_total_weight()
 	if inventory_type == InventoryType.GRID:
 		_remove_item_from_grid(item)
 		items.erase(item)
@@ -106,7 +107,7 @@ func remove_item(item: InventoryItem) -> bool:
 			items[index] = null
 			item_removed.emit(item, index)
 	
-	current_weight -= item.get_total_weight()
+	current_weight -= item_weight
 	inventory_changed.emit()
 	return true
 

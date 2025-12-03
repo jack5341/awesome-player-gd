@@ -7,6 +7,9 @@ class_name PlayerSprint
 @export var fall_state: State
 @export var crouch_state: State
 
+func enter() -> void:
+	pass
+
 func physics_update(delta: float) -> void:
 	if not player.is_on_floor():
 		state_machine.change_state(fall_state)

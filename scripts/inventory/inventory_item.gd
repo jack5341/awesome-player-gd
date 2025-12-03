@@ -7,7 +7,6 @@ var durability: float = 100.0 ## Current durability percentage (0-100)
 var grid_position: Vector2i = Vector2i(-1, -1) ## Position in grid inventory (-1 = not placed)
 var is_rotated: bool = false ## Whether item is rotated 90 degrees in grid
 var custom_data: Dictionary = {} ## Runtime custom data
-
 func _init(p_data: ItemData = null, p_quantity: int = 1) -> void:
 	data = p_data
 	quantity = p_quantity

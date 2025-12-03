@@ -6,11 +6,6 @@ class_name PlayerCrouch
 @export var fall_state: State
 
 func enter() -> void:
-	# Trigger crouch animation or scale collider
-	pass
-
-func exit() -> void:
-	# Reset collider
 	pass
 
 func physics_update(delta: float) -> void:

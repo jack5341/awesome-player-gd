@@ -7,7 +7,6 @@ class_name PlayerIdle
 @export var crouch_state: State
 
 func enter() -> void:
-	# Decelerate to zero
 	pass
 
 func physics_update(delta: float) -> void:

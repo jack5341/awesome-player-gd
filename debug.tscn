@@ -29,7 +29,23 @@ environment = SubResource("Environment_lvjdj")
 
 [node name="CSGBox3D" type="CSGBox3D" parent="."]
 use_collision = true
-size = Vector3(5, 0, 5)
+size = Vector3(50, 0, 50)
 material = SubResource("StandardMaterial3D_110fs")
 
-[node name="Player5" parent="." instance=ExtResource("1_1uwqr")]
+[node name="Player" parent="." instance=ExtResource("1_1uwqr")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1)
+
+[node name="CSGBox3D2" type="CSGBox3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.31829834, -0.7571119)
+use_collision = true
+size = Vector3(0.3, 0.6365967, 0.3)
+
+[node name="CSGBox3D4" type="CSGBox3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.15, -0.15711188)
+use_collision = true
+size = Vector3(0.3, 0.3, 0.3)
+
+[node name="CSGBox3D3" type="CSGBox3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, -1.3782295)
+use_collision = true
+size = Vector3(0.3, 1, 0.3)

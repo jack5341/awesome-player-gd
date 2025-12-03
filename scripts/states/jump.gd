@@ -7,7 +7,6 @@ class_name PlayerJump
 
 func enter() -> void:
 	player.velocity.y = player.jump_velocity
-	# Play jump sound?
 
 func physics_update(delta: float) -> void:
 	if player.velocity.y < 0:

@@ -5,9 +5,13 @@ class_name PlayerFall
 @export var walk_state: State
 @export var jump_state: State
 
+func enter() -> void:
+	pass
+
 func physics_update(delta: float) -> void:
 	if player.is_on_floor():
-		if Input.get_vector("awesome_player_move_left", "awesome_player_move_right", "awesome_player_move_up", "awesome_player_move_down") != Vector2.ZERO:
+		var input_dir = Input.get_vector("awesome_player_move_left", "awesome_player_move_right", "awesome_player_move_up", "awesome_player_move_down")
+		if input_dir != Vector2.ZERO:
 			state_machine.change_state(walk_state)
 		else:
 			state_machine.change_state(idle_state)
