@@ -87,6 +87,9 @@ var death_count: int = 0
 @export var jump_volume: float = 1.0 ## Volume level for jump sounds (0.0 to 1.0)
 @export var die_volume: float = 1.0 ## Volume level for die sounds (0.0 to 1.0)
 
+@export_group("Animation")
+@export var animation_tree: AnimationTree ## Reference to the AnimationTree node
+
 @onready var state_machine: StateMachine = $PlayerStateMachine
 @onready var camera: Camera3D = $CameraPivot/CameraSpringArm/PlayerCamera
 @onready var camera_pivot: Node3D = $CameraPivot
@@ -182,10 +185,11 @@ func _update_camera(delta: float) -> void:
 	if camera_bob_enabled:
 		if velocity.length() > 0.1 and is_on_floor():
 			camera_bob_time += delta * camera_bob_frequency * (velocity.length() / walk_speed)
-			camera.position.y = camera_offset.y + sin(camera_bob_time) * camera_bob_amount
+			# Bob around 0.0 since pivot is already at camera_offset
+			camera.position.y = sin(camera_bob_time) * camera_bob_amount
 		else:
 			camera_bob_time = 0.0
-			camera.position.y = move_toward(camera.position.y, camera_offset.y, delta)
+			camera.position.y = move_toward(camera.position.y, 0.0, delta)
 
 func _handle_stamina(delta: float) -> void:
 	if is_stamina_enabled and current_stamina < max_stamina:
