@@ -8,17 +8,17 @@ class_name Weapon extends Base
 @export var can_attack: bool = true ## Whether the player is currently allowed to attack
 
 @export_subgroup("Weapon Model")
-@export var weapon_mesh: Mesh ## Mesh for the weapon model
-@export var weapon_shadow: Mesh ## Mesh for the weapon shadow
-@export var weapon_model_scale: Vector3 = Vector3.ONE ## Scale of the weapon model
-@export var weapon_model_rotation: Vector3 = Vector3.ZERO ## Rotation of the weapon model
-@export var weapon_model_position: Vector3 = Vector3.ZERO ## Position of the weapon model
+@export var mesh: Mesh ## Mesh for the weapon model
+@export var shadow: Mesh ## Mesh for the weapon shadow
+@export var model_scale: Vector3 = Vector3.ONE ## Scale of the weapon model
+@export var model_rotation: Vector3 = Vector3.ZERO ## Rotation of the weapon model
+@export var model_position: Vector3 = Vector3.ZERO ## Position of the weapon model
 
 @export_subgroup("Weapon Audio")
-@export var weapon_audio: AudioStream ## Audio stream for the weapon
-@export var weapon_audio_volume: float = 1.0 ## Volume of the weapon audio
-@export var weapon_audio_pitch: float = 1.0 ## Pitch of the weapon audio
-@export var weapon_audio_loop: bool = true ## Whether the weapon audio should loop
+@export var audio: AudioStream ## Audio stream for the weapon
+@export var audio_volume: float = 1.0 ## Volume of the weapon audio
+@export var audio_pitch: float = 1.0 ## Pitch of the weapon audio
+@export var audio_loop: bool = true ## Whether the weapon audio should loop
 
 @export_subgroup("Weapon Sway")
 @export var sway_min: Vector2 = Vector2.ZERO

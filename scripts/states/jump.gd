@@ -5,8 +5,14 @@ class_name PlayerJump
 @export var idle_state: State
 @export var walk_state: State
 
+
+func _ready() -> void:
+	animation_name = "jump"
+
 func enter() -> void:
+	player.play_animation(animation_name)
 	player.velocity.y = player.jump_velocity
+
 
 func physics_update(delta: float) -> void:
 	if player.velocity.y < 0:

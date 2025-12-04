@@ -8,9 +8,15 @@ class_name PlayerWalk
 @export var crouch_state: State
 
 func enter() -> void:
-	pass
+	animation_name = "walk"
+	player.play_animation(animation_name)
 
-func physics_update(delta: float) -> void:
+func update(_delta: float) -> void:
+	if animation_name and player.animation_player:
+		if not player.animation_player.is_playing() or player.animation_player.current_animation != animation_name:
+			player.play_animation(animation_name)
+
+func physics_update(_delta: float) -> void:
 	if not player.is_on_floor():
 		state_machine.change_state(fall_state)
 		return
@@ -29,12 +35,17 @@ func physics_update(delta: float) -> void:
 
 	var input_dir := Input.get_vector("awesome_player_move_left", "awesome_player_move_right", "awesome_player_move_up", "awesome_player_move_down")
 	if input_dir == Vector2.ZERO:
+		player.velocity.x = 0.0
+		player.velocity.z = 0.0
 		state_machine.change_state(idle_state)
 		return
 	
 	var direction := (player.transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
 	if direction:
-		player.velocity.x = move_toward(player.velocity.x, direction.x * player.walk_speed, player.acceleration * delta)
-		player.velocity.z = move_toward(player.velocity.z, direction.z * player.walk_speed, player.acceleration * delta)
+		player.velocity.x = direction.x * player.walk_speed
+		player.velocity.z = direction.z * player.walk_speed
+	else:
+		player.velocity.x = 0.0
+		player.velocity.z = 0.0
 	
 	player.move_and_slide()

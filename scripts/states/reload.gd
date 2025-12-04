@@ -5,6 +5,9 @@ class_name PlayerReload
 @export var walk_state: State
 
 func enter() -> void:
+	animation_name = "reload"
+	player.play_animation(animation_name)
+
 	# Placeholder for reload logic
 	# In a real game, you'd play an animation and wait for a signal or timer
 	# For now, we just wait a bit and return to idle

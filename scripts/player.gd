@@ -1,18 +1,23 @@
+@tool
 extends CharacterBody3D
 class_name Player
 
 signal health_changed(current_health: float, max_health: float)
 signal stamina_changed(current_stamina: float, max_stamina: float)
+signal dead()
 signal interacted(object: Node)
 signal interaction_focused(object: Node)
 signal interaction_unfocused()
-signal toggle_inventory()
 
 @export_subgroup("Health & Stats")
 @export var max_health: float = 100.0 ## Maximum health points the player can have
 @export var current_health: float = 100.0: ## Current health points of the player
 	set(value):
 		current_health = value
+		if current_health <= 0:
+			is_dead = true
+			dead.emit()
+			return
 		health_changed.emit(current_health, max_health)
 @export var is_stamina_enabled: bool = true ## Whether the stamina system is active
 @export var max_stamina: float = 100.0 ## Maximum stamina points the player can have
@@ -38,7 +43,9 @@ signal toggle_inventory()
 @export var can_sprint: bool = true ## Whether the player can sprint
 
 @export_subgroup("Combat")
-@export var weapon: Weapon = null
+@export var weapon: Weapon = null:
+	set(value):
+		weapon = value
 var last_attack_time: float = 0.0
 
 @export_subgroup("Interaction")
@@ -48,14 +55,27 @@ var current_interactable: Node = null
 
 @export_subgroup("Camera")
 @export var camera_sensitivity: float = 0.003 ## Mouse sensitivity for camera rotation
-@export var camera_fov: float = 75.0 ## Field of view angle for the camera
+@export var camera_fov: float = 75.0: ## Field of view angle for the camera
+	set(value):
+		camera_fov = value
+		if camera:
+			camera.fov = camera_fov
 @export var camera_bob_enabled: bool = true ## Whether camera bobbing effect is enabled when moving
 @export var camera_bob_amount: float = 0.05 ## Intensity of camera bobbing effect
 @export var camera_bob_frequency: float = 2.0 ## Frequency of camera bobbing animation
 @export var invert_y_axis: bool = false ## Whether to invert vertical mouse look
 @export var mouse_capture_enabled: bool = true ## Whether mouse cursor is captured on start
-@export var head_height: float = 1.6 ## Height of camera from ground
-@export var camera_offset: Vector3 = Vector3(0, 1.6, 0) ## 3D offset position of camera relative to player head
+@export var head_height: float = 1.6: ## Height of camera from ground
+	set(value):
+		head_height = value
+		camera_offset.y = head_height
+		if camera_pivot:
+			camera_pivot.position = camera_offset
+@export var camera_offset: Vector3 = Vector3(0, 1.6, 0): ## 3D offset position of camera relative to player head
+	set(value):
+		camera_offset = value
+		if camera_pivot:
+			camera_pivot.position = camera_offset
 @export var weapon_bob_enabled: bool = true ## Whether weapon bobbing effect is enabled
 @export var weapon_bob_amount: float = 0.02 ## Intensity of weapon bobbing effect
 var head_bone: Node3D = null # Optional: for FPS head tracking
@@ -88,21 +108,26 @@ var death_count: int = 0
 @export var die_volume: float = 1.0 ## Volume level for die sounds (0.0 to 1.0)
 
 @export_group("Animation")
-@export var animation_tree: AnimationTree ## Reference to the AnimationTree node
+@export var animation_player: AnimationPlayer ## Reference to the AnimationPlayer node
+
 
 @onready var state_machine: StateMachine = $PlayerStateMachine
 @onready var camera: Camera3D = $CameraPivot/CameraSpringArm/PlayerCamera
 @onready var camera_pivot: Node3D = $CameraPivot
 @onready var camera_spring_arm: SpringArm3D = $CameraPivot/CameraSpringArm
 @onready var inventory: InventoryManager = $InventoryManager
+@onready var interaction_raycast: RayCast3D = $CameraPivot/CameraSpringArm/PlayerCamera/InteractionRaycast
 
 func _ready() -> void:
-	if mouse_capture_enabled:
-		Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+	if not Engine.is_editor_hint():
+		if mouse_capture_enabled:
+			Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+		
+		_setup_state_machine()
+		_setup_inventory()
+		_setup_visuals()
 	
 	_setup_camera()
-	_setup_state_machine()
-	_setup_inventory()
 
 func _setup_inventory() -> void:
 	# Auto-attach script if missing
@@ -134,11 +159,26 @@ func _setup_state_machine() -> void:
 	state_machine.init(self)
 
 func _setup_camera() -> void:
-	camera_pivot.position = camera_offset
-	camera_spring_arm.spring_length = 0
-	camera.position = Vector3.ZERO
+	if camera_pivot:
+		camera_pivot.position = camera_offset
+	if camera_spring_arm:
+		camera_spring_arm.spring_length = 0
+	if camera:
+		camera.position = Vector3.ZERO
+		camera.fov = camera_fov
+
+func _setup_visuals() -> void:
+	if is_local_player:
+		var skeleton = find_child("Skeleton3D")
+		if skeleton:
+			for child in skeleton.get_children():
+				if child is MeshInstance3D:
+					child.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_SHADOWS_ONLY
 
 func _unhandled_input(event: InputEvent) -> void:
+	if Engine.is_editor_hint():
+		return
+		
 	if event.is_action_pressed("ui_cancel"): # ESC key
 		if Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED:
 			Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
@@ -159,12 +199,18 @@ func _unhandled_input(event: InputEvent) -> void:
 		state_machine._unhandled_input(event)
 
 func _physics_process(delta: float) -> void:
+	if Engine.is_editor_hint():
+		return
+		
 	if state_machine:
 		state_machine._physics_process(delta)
 	
 	_handle_interaction()
 
 func _process(delta: float) -> void:
+	if Engine.is_editor_hint():
+		return
+		
 	if state_machine:
 		state_machine._process(delta)
 	
@@ -237,3 +283,9 @@ func _on_item_used(item: InventoryItem) -> void:
 		current_health = min(current_health + float(item.data.metadata["heal_amount"]), max_health)
 	if item.data.metadata.has("stamina_amount"):
 		current_stamina = min(current_stamina + float(item.data.metadata["stamina_amount"]), max_stamina)
+
+func play_animation(anim_name: String, custom_blend: float = -1, custom_speed: float = 1.0, from_end: bool = false) -> void:
+	if animation_player and animation_player.has_animation(anim_name):
+		animation_player.play(anim_name, custom_blend, custom_speed, from_end)
+	elif animation_player:
+		push_warning("Animation not found: " + anim_name)

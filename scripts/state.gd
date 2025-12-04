@@ -4,6 +4,9 @@ extends Node
 var state_machine = null
 var player: Player = null
 
+@export var animation_name: String = ""
+
+
 func enter() -> void:
 	pass
 

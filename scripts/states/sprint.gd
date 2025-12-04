@@ -8,7 +8,13 @@ class_name PlayerSprint
 @export var crouch_state: State
 
 func enter() -> void:
-	pass
+	animation_name = "run"
+	player.play_animation(animation_name)
+
+func update(_delta: float) -> void:
+	if animation_name and player.animation_player:
+		if not player.animation_player.is_playing() or player.animation_player.current_animation != animation_name:
+			player.play_animation(animation_name)
 
 func physics_update(delta: float) -> void:
 	if not player.is_on_floor():

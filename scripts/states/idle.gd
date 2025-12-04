@@ -7,7 +7,13 @@ class_name PlayerIdle
 @export var crouch_state: State
 
 func enter() -> void:
-	pass
+	animation_name = "idle"
+	player.play_animation(animation_name)
+
+func update(_delta: float) -> void:
+	if animation_name and player.animation_player:
+		if not player.animation_player.is_playing() or player.animation_player.current_animation != animation_name:
+			player.play_animation(animation_name)
 
 func physics_update(delta: float) -> void:
 	if not player.is_on_floor():
@@ -26,7 +32,7 @@ func physics_update(delta: float) -> void:
 	if input_dir != Vector2.ZERO:
 		state_machine.change_state(walk_state)
 	
-	# Apply friction/deceleration
-	player.velocity.x = move_toward(player.velocity.x, 0, player.friction * delta)
-	player.velocity.z = move_toward(player.velocity.z, 0, player.friction * delta)
+	# Instantly stop horizontal movement
+	player.velocity.x = 0.0
+	player.velocity.z = 0.0
 	player.move_and_slide()
