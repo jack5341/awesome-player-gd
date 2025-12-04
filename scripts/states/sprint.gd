@@ -39,14 +39,15 @@ func physics_update(delta: float) -> void:
 		state_machine.change_state(crouch_state)
 		return
 	
-	# Handle Stamina - only if stamina is required for sprinting
-	if player.sprint_requires_stamina and player.is_stamina_enabled:
-		player.current_stamina -= player.stamina_drain_rate * delta
-		if player.current_stamina <= 0:
-			player.current_stamina = 0
-			# Transition to walk state, not idle, so player keeps moving
-			state_machine.change_state(walk_state)
-			return
+	# Handle Stamina - ONLY drain if both conditions are true
+	if player.sprint_requires_stamina:
+		if player.is_stamina_enabled:
+			player.current_stamina -= player.stamina_drain_rate * delta
+			if player.current_stamina <= 0:
+				player.current_stamina = 0
+				# Transition to walk state, not idle, so player keeps moving
+				state_machine.change_state(walk_state)
+				return
 
 	# Check for no input AFTER stamina check
 	if input_dir == Vector2.ZERO:
