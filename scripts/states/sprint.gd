@@ -41,20 +41,24 @@ func physics_update(delta: float) -> void:
 	if not Input.is_action_pressed("awesome_player_move_sprint") or not player.can_sprint:
 		state_machine.change_state(walk_state)
 		return
+	
+	# If moving backward, switch to walk state (can't sprint backward)
+	if input_dir.y > 0:
+		state_machine.change_state(walk_state)
+		return
 		
 	if Input.is_action_pressed("awesome_player_move_crouch"):
 		state_machine.change_state(crouch_state)
 		return
 	
-	# Handle Stamina - ONLY drain if both conditions are true
-	if player.sprint_requires_stamina:
-		if player.is_stamina_enabled:
-			player.current_stamina -= player.stamina_drain_rate * delta
-			if player.current_stamina <= 0:
-				player.current_stamina = 0
-				# Transition to walk state, not idle, so player keeps moving
-				state_machine.change_state(walk_state)
-				return
+	# Handle Stamina - ONLY drain if sprint_requires_stamina is true AND stamina is enabled
+	if player.sprint_requires_stamina and player.is_stamina_enabled:
+		player.current_stamina -= player.stamina_drain_rate * delta
+		if player.current_stamina <= 0:
+			player.current_stamina = 0
+			# Transition to walk state so player keeps moving
+			state_machine.change_state(walk_state)
+			return
 
 	# Check for no input AFTER stamina check
 	if input_dir == Vector2.ZERO:

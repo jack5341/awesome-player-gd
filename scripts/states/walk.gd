@@ -22,8 +22,9 @@ func physics_update(delta: float) -> void:
 	# Calculate direction relative to camera
 	var direction := (player.camera_pivot.global_transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
 	
-	# Rotate player to face direction
-	if direction:
+	# Only rotate player when moving forward or strafing, NOT when moving backward
+	# input_dir.y < 0 means moving forward, input_dir.y > 0 means moving backward
+	if direction and input_dir.y <= 0:
 		var target_rotation = atan2(-direction.x, -direction.z)
 		player.rotation.y = lerp_angle(player.rotation.y, target_rotation, player.rotation_speed * delta)
 	
@@ -43,8 +44,11 @@ func physics_update(delta: float) -> void:
 		return
 	
 	if Input.is_action_pressed("awesome_player_move_sprint") and player.can_sprint:
-		# Allow sprint if stamina is not required, or if stamina is available
-		if not player.sprint_requires_stamina or (player.is_stamina_enabled and player.current_stamina > 0):
+		# Only allow sprint when moving forward or strafing, NOT backward
+		# input_dir.y > 0 means moving backward
+		if input_dir.y > 0:
+			pass # Don't allow sprint when moving backward, continue walking
+		elif not player.sprint_requires_stamina or (player.is_stamina_enabled and player.current_stamina > 0):
 			state_machine.change_state(sprint_state)
 			return
 

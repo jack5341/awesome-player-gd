@@ -123,7 +123,7 @@ var current_blend_x: float = 0.0 ## Current blend value for BlendSpace2D X-axis 
 @onready var interaction_raycast: RayCast3D = $CameraPivot/CameraSpringArm/PlayerCamera/InteractionRaycast
 @onready var animation_tree: AnimationTree = $AnimationTree
 
-const LOCOMOTION_BLEND_PARAM = "parameters/Locomotion/blend_position"
+const BARE_HAND_LOCOMOTION_BLEND_PARAM = "parameters/BareHandLocomotion/blend_position"
 const STATE_MACHINE_TRAVEL = "parameters/playback"
 
 func _ready() -> void:
@@ -232,7 +232,10 @@ func _handle_camera_rotation(event: InputEventMouseMotion) -> void:
 	camera_rotation_vertical -= event.relative.y * camera_sensitivity * vertical_mult
 	
 	camera_rotation_vertical = clamp(camera_rotation_vertical, deg_to_rad(-90), deg_to_rad(90))
-	camera_rotation_vertical = clamp(camera_rotation_vertical, deg_to_rad(-90), deg_to_rad(90))
+
+	var relative_horizontal = camera_rotation_horizontal - rotation.y
+	relative_horizontal = clamp(relative_horizontal, deg_to_rad(-90), deg_to_rad(90))
+	camera_rotation_horizontal = rotation.y + relative_horizontal
 
 func _update_camera(delta: float) -> void:
 	# Apply camera rotation
@@ -308,21 +311,25 @@ func update_blend_value(input_dir: Vector2, speed_ratio: float, delta: float) ->
 	Updates BlendSpace2D based on input direction and movement speed.
 	
 	input_dir: Input vector (x = strafe, y = forward/back)
-	speed_ratio: Speed ratio for Y-axis (0.0 = idle, 0.5 = walk, 1.0 = run)
+	speed_ratio: Speed multiplier (0.5 = walk, 1.0 = run)
 	delta: Delta time for smooth interpolation
 	
 	BlendSpace2D mapping:
-	- X axis: -1 = strafe left, 0 = no strafe, 1 = strafe right
-	- Y axis: 0 = idle, 0.5 = walk, 1.0 = run
+	- X axis: -1 = left strafe run, -0.5 = left strafe walk, 0 = no strafe, 0.5 = right strafe walk, 1 = right strafe run
+	- Y axis: -1 = backward run, -0.5 = backward walk, 0 = idle, 0.5 = forward walk, 1 = forward run
 	"""
 	
 	# Target blend position based on input direction and speed ratio
 	var target_blend = Vector2.ZERO
 	if input_dir.length() > 0.1: # Dead zone
-		# X-axis: left/right strafing
-		target_blend.x = input_dir.x
-		# Y-axis: speed ratio (0 = idle, 0.5 = walk, 1.0 = run)
-		target_blend.y = speed_ratio
+		# X-axis: left/right strafing scaled by speed_ratio
+		# input_dir.x: -1 = left, 1 = right
+		target_blend.x = input_dir.x * speed_ratio
+		
+		# Y-axis: forward/backward scaled by speed_ratio
+		# input_dir.y: -1 = forward, 1 = backward
+		# We negate it so forward becomes positive and backward becomes negative
+		target_blend.y = - input_dir.y * speed_ratio
 	
 	# Smooth lerp to target blend position
 	current_blend_value = lerpf(current_blend_value, target_blend.y, blend_speed * delta)
@@ -331,4 +338,4 @@ func update_blend_value(input_dir: Vector2, speed_ratio: float, delta: float) ->
 	# Update AnimationTree BlendSpace2D
 	if animation_tree:
 		var blend_pos = Vector2(current_blend_x, current_blend_value)
-		animation_tree.set(LOCOMOTION_BLEND_PARAM, blend_pos)
+		animation_tree.set(BARE_HAND_LOCOMOTION_BLEND_PARAM, blend_pos)

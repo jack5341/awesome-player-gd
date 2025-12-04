@@ -12,6 +12,9 @@ A highly configurable, scalable 3D player controller with state machine architec
 - **Combat System**: Attack damage, range, cooldown, and knockback
 - **Interaction System**: Raycast-based object interaction
 
+### Equipment System
+- **Equipment System**: Flexible equipment system
+
 ### 🎨 Animation System
 - **AnimationPlayer Support**: Play simple animations by name
 - **AnimationTree Support**: Use advanced blend trees
