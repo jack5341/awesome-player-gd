@@ -123,8 +123,7 @@ var current_blend_x: float = 0.0 ## Current blend value for BlendSpace2D X-axis 
 @onready var interaction_raycast: RayCast3D = $CameraPivot/CameraSpringArm/PlayerCamera/InteractionRaycast
 @onready var animation_tree: AnimationTree = $AnimationTree
 
-const WALK_BLEND_PARAM = "parameters/Walk/blend_position"
-const RUN_BLEND_PARAM = "parameters/Run/blend_position"
+const LOCOMOTION_BLEND_PARAM = "parameters/Locomotion/blend_position"
 const STATE_MACHINE_TRAVEL = "parameters/playback"
 
 func _ready() -> void:
@@ -137,7 +136,7 @@ func _ready() -> void:
 		#_setup_visuals()
 	
 	_setup_camera()
-
+	
 func _setup_inventory() -> void:
 	# Auto-attach script if missing
 	if not inventory.get_script():
@@ -304,50 +303,32 @@ func play_animation(anim_name: String, custom_blend: float = -1, custom_speed: f
 	elif animation_player:
 		push_warning("Animation not found: " + anim_name)
 
-func update_blend_value(input_dir: Vector2, current_speed: float, max_speed: float, delta: float, state_name: String = "") -> void:
+func update_blend_value(input_dir: Vector2, speed_ratio: float, delta: float) -> void:
 	"""
 	Updates BlendSpace2D based on input direction and movement speed.
 	
 	input_dir: Input vector (x = strafe, y = forward/back)
-	current_speed: Current movement speed (velocity magnitude)
-	max_speed: Maximum speed for this state (walk_speed or sprint_speed)
-	state_name: "Walk" or "Run" - determines which BlendSpace2D to update
+	speed_ratio: Speed ratio for Y-axis (0.0 = idle, 0.5 = walk, 1.0 = run)
+	delta: Delta time for smooth interpolation
 	
 	BlendSpace2D mapping:
 	- X axis: -1 = strafe left, 0 = no strafe, 1 = strafe right
-	- Y axis: -1 = backward, 0 = idle, 1 = forward
+	- Y axis: 0 = idle, 0.5 = walk, 1.0 = run
 	"""
 	
-	# Calculate blend position based on input direction
-	# Normalize speed to 0-1 range based on max speed
-	var speed_normalized = clamp(current_speed / max_speed, 0.0, 1.0) if max_speed > 0 else 0.0
-	
-	# Target blend position based on input direction and speed
+	# Target blend position based on input direction and speed ratio
 	var target_blend = Vector2.ZERO
 	if input_dir.length() > 0.1: # Dead zone
 		# X-axis: left/right strafing
 		target_blend.x = input_dir.x
-		# Y-axis: forward/backward movement (scaled by speed, negated because input_dir.y is negative for forward)
-		target_blend.y = - input_dir.y * speed_normalized
+		# Y-axis: speed ratio (0 = idle, 0.5 = walk, 1.0 = run)
+		target_blend.y = speed_ratio
 	
 	# Smooth lerp to target blend position
 	current_blend_value = lerpf(current_blend_value, target_blend.y, blend_speed * delta)
 	current_blend_x = lerpf(current_blend_x, target_blend.x, blend_speed * delta)
 	
 	# Update AnimationTree BlendSpace2D
-	if animation_tree and state_name != "":
+	if animation_tree:
 		var blend_pos = Vector2(current_blend_x, current_blend_value)
-		
-		# Get the state machine playback to control state transitions
-		var playback = animation_tree.get(STATE_MACHINE_TRAVEL) as AnimationNodeStateMachinePlayback
-		
-		if state_name == "Walk":
-			# Travel to Walk state in the state machine
-			if playback and playback.get_current_node() != "Walk":
-				playback.travel("Walk")
-			animation_tree.set(WALK_BLEND_PARAM, blend_pos)
-		elif state_name == "Run":
-			# Travel to Run state in the state machine
-			if playback and playback.get_current_node() != "Run":
-				playback.travel("Run")
-			animation_tree.set(RUN_BLEND_PARAM, blend_pos)
+		animation_tree.set(LOCOMOTION_BLEND_PARAM, blend_pos)

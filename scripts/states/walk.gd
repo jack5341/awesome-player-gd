@@ -18,7 +18,6 @@ func update(_delta: float) -> void:
 
 func physics_update(delta: float) -> void:
 	var input_dir := Input.get_vector("awesome_player_move_left", "awesome_player_move_right", "awesome_player_move_up", "awesome_player_move_down")
-	var horizontal_velocity = Vector2(player.velocity.x, player.velocity.z).length()
 	
 	# Calculate direction relative to camera
 	var direction := (player.camera_pivot.global_transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
@@ -28,9 +27,8 @@ func physics_update(delta: float) -> void:
 		var target_rotation = atan2(-direction.x, -direction.z)
 		player.rotation.y = lerp_angle(player.rotation.y, target_rotation, player.rotation_speed * delta)
 	
-	# Update blend value - force forward blend (0, -1) when moving
-	var blend_input = Vector2(0, -1) if input_dir.length() > 0.1 else Vector2.ZERO
-	player.update_blend_value(blend_input, horizontal_velocity, player.walk_speed, delta, "Walk")
+	# Update blend value with proper input direction for strafing
+	player.update_blend_value(input_dir, 0.5, delta)
 	
 	if not player.is_on_floor():
 		state_machine.change_state(fall_state)

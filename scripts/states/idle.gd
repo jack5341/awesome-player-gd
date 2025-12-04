@@ -18,8 +18,7 @@ func update(_delta: float) -> void:
 
 func physics_update(delta: float) -> void:
 	# Update blend value for idle - no input, no movement
-	var horizontal_velocity = Vector2(player.velocity.x, player.velocity.z).length()
-	player.update_blend_value(Vector2.ZERO, horizontal_velocity, player.walk_speed, delta, "Walk")
+	player.update_blend_value(Vector2.ZERO, 0.0, delta)
 	
 	if not player.is_on_floor():
 		state_machine.change_state(fall_state)
