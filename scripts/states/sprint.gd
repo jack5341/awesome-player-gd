@@ -20,8 +20,17 @@ func physics_update(delta: float) -> void:
 	var input_dir := Input.get_vector("awesome_player_move_left", "awesome_player_move_right", "awesome_player_move_up", "awesome_player_move_down")
 	var horizontal_velocity = Vector2(player.velocity.x, player.velocity.z).length()
 	
-	# Update blend value for run with input direction and current speed
-	player.update_blend_value(input_dir, horizontal_velocity, player.sprint_speed, delta, "Run")
+	# Calculate direction relative to camera
+	var direction := (player.camera_pivot.global_transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
+	
+	# Rotate player to face direction
+	if direction:
+		var target_rotation = atan2(-direction.x, -direction.z)
+		player.rotation.y = lerp_angle(player.rotation.y, target_rotation, player.rotation_speed * delta)
+	
+	# Update blend value - force forward blend (0, -1) when moving
+	var blend_input = Vector2(0, -1) if input_dir.length() > 0.1 else Vector2.ZERO
+	player.update_blend_value(blend_input, horizontal_velocity, player.sprint_speed, delta, "Run")
 	
 	if not player.is_on_floor():
 		state_machine.change_state(fall_state)
@@ -54,7 +63,8 @@ func physics_update(delta: float) -> void:
 		state_machine.change_state(idle_state)
 		return
 	
-	var direction := (player.transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
+	# Direction is already calculated above
+	# var direction := (player.transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
 	if direction:
 		player.velocity.x = move_toward(player.velocity.x, direction.x * player.sprint_speed, player.acceleration * delta)
 		player.velocity.z = move_toward(player.velocity.z, direction.z * player.sprint_speed, player.acceleration * delta)

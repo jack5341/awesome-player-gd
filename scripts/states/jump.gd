@@ -21,7 +21,11 @@ func physics_update(delta: float) -> void:
 	
 	# Air control
 	var input_dir := Input.get_vector("awesome_player_move_left", "awesome_player_move_right", "awesome_player_move_up", "awesome_player_move_down")
-	var direction := (player.transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
+	var direction := (player.camera_pivot.global_transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
+	
+	if direction:
+		var target_rotation = atan2(-direction.x, -direction.z)
+		player.rotation.y = lerp_angle(player.rotation.y, target_rotation, player.rotation_speed * delta)
 	
 	if direction:
 		player.velocity.x = move_toward(player.velocity.x, direction.x * player.walk_speed, player.acceleration * player.air_control * delta)

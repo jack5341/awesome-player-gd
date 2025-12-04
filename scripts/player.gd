@@ -35,6 +35,7 @@ signal interaction_unfocused()
 @export var crouch_speed: float = 2.5 ## Movement speed while crouching
 @export var acceleration: float = 10.0 ## How quickly the player reaches target speed
 @export var friction: float = 10.0 ## How quickly the player decelerates when stopping
+@export var rotation_speed: float = 10.0 ## How quickly the player rotates to face movement direction
 @export var air_control: float = 0.3 ## Movement control multiplier while in air (0.0 = no control, 1.0 = full control)
 @export var jump_count: int = 1 ## Current number of jumps available (for double/triple jump)
 @export var jump_velocity: float = 4.5 ## Current number of jumps available (for double/triple jump)
@@ -232,10 +233,15 @@ func _handle_camera_rotation(event: InputEventMouseMotion) -> void:
 	camera_rotation_vertical -= event.relative.y * camera_sensitivity * vertical_mult
 	
 	camera_rotation_vertical = clamp(camera_rotation_vertical, deg_to_rad(-90), deg_to_rad(90))
-	camera.rotation.x = camera_rotation_vertical
-	self.rotation.y = camera_rotation_horizontal
+	camera_rotation_vertical = clamp(camera_rotation_vertical, deg_to_rad(-90), deg_to_rad(90))
 
 func _update_camera(delta: float) -> void:
+	# Apply camera rotation
+	if camera:
+		camera.rotation.x = camera_rotation_vertical
+	if camera_pivot:
+		camera_pivot.rotation.y = camera_rotation_horizontal - rotation.y
+
 	if camera_bob_enabled:
 		if velocity.length() > 0.1 and is_on_floor():
 			camera_bob_time += delta * camera_bob_frequency * (velocity.length() / walk_speed)
