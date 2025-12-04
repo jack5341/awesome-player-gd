@@ -17,6 +17,12 @@ func update(_delta: float) -> void:
 			player.play_animation(animation_name)
 
 func physics_update(delta: float) -> void:
+	var input_dir := Input.get_vector("awesome_player_move_left", "awesome_player_move_right", "awesome_player_move_up", "awesome_player_move_down")
+	var horizontal_velocity = Vector2(player.velocity.x, player.velocity.z).length()
+	
+	# Update blend value for run with input direction and current speed
+	player.update_blend_value(input_dir, horizontal_velocity, player.sprint_speed, delta, "Run")
+	
 	if not player.is_on_floor():
 		state_machine.change_state(fall_state)
 		return
@@ -32,19 +38,20 @@ func physics_update(delta: float) -> void:
 	if Input.is_action_pressed("awesome_player_move_crouch"):
 		state_machine.change_state(crouch_state)
 		return
-
-	var input_dir := Input.get_vector("awesome_player_move_left", "awesome_player_move_right", "awesome_player_move_up", "awesome_player_move_down")
-	if input_dir == Vector2.ZERO:
-		state_machine.change_state(idle_state)
-		return
 	
-	# Handle Stamina
-	if player.is_stamina_enabled:
+	# Handle Stamina - only if stamina is required for sprinting
+	if player.sprint_requires_stamina and player.is_stamina_enabled:
 		player.current_stamina -= player.stamina_drain_rate * delta
 		if player.current_stamina <= 0:
 			player.current_stamina = 0
+			# Transition to walk state, not idle, so player keeps moving
 			state_machine.change_state(walk_state)
 			return
+
+	# Check for no input AFTER stamina check
+	if input_dir == Vector2.ZERO:
+		state_machine.change_state(idle_state)
+		return
 	
 	var direction := (player.transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
 	if direction:

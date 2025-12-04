@@ -29,3 +29,6 @@ func physics_update(delta: float) -> void:
 	
 	player.velocity += player.get_gravity() * delta
 	player.move_and_slide()
+	
+	player.velocity += player.get_gravity() * delta
+	player.move_and_slide()

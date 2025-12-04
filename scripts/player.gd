@@ -41,6 +41,7 @@ signal interaction_unfocused()
 @export var max_jumps: int = 1 ## Maximum number of jumps the player can perform
 @export var coyote_time: float = 0.2 ## Time window after leaving ground where jump is still allowed (in seconds)
 @export var can_sprint: bool = true ## Whether the player can sprint
+@export var sprint_requires_stamina: bool = true ## Whether sprinting requires stamina (if false, can sprint infinitely)
 
 @export_subgroup("Combat")
 @export var weapon: Weapon = null:
@@ -109,7 +110,9 @@ var death_count: int = 0
 
 @export_group("Animation")
 @export var animation_player: AnimationPlayer ## Reference to the AnimationPlayer node
-
+@export var blend_speed: float = 8.0 ## Speed at which blend values lerp between states
+var current_blend_value: float = 0.0 ## Current blend value for BlendSpace2D Y-axis (forward/backward: -1 to 1)
+var current_blend_x: float = 0.0 ## Current blend value for BlendSpace2D X-axis (strafe: -1=left, 1=right)
 
 @onready var state_machine: StateMachine = $PlayerStateMachine
 @onready var camera: Camera3D = $CameraPivot/CameraSpringArm/PlayerCamera
@@ -117,6 +120,11 @@ var death_count: int = 0
 @onready var camera_spring_arm: SpringArm3D = $CameraPivot/CameraSpringArm
 @onready var inventory: InventoryManager = $InventoryManager
 @onready var interaction_raycast: RayCast3D = $CameraPivot/CameraSpringArm/PlayerCamera/InteractionRaycast
+@onready var animation_tree: AnimationTree = $AnimationTree
+
+const WALK_BLEND_PARAM = "parameters/Walk/blend_position"
+const RUN_BLEND_PARAM = "parameters/Run/blend_position"
+const STATE_MACHINE_TRAVEL = "parameters/playback"
 
 func _ready() -> void:
 	if not Engine.is_editor_hint():
@@ -125,7 +133,7 @@ func _ready() -> void:
 		
 		_setup_state_machine()
 		_setup_inventory()
-		_setup_visuals()
+		#_setup_visuals()
 	
 	_setup_camera()
 
@@ -289,3 +297,51 @@ func play_animation(anim_name: String, custom_blend: float = -1, custom_speed: f
 		animation_player.play(anim_name, custom_blend, custom_speed, from_end)
 	elif animation_player:
 		push_warning("Animation not found: " + anim_name)
+
+func update_blend_value(input_dir: Vector2, current_speed: float, max_speed: float, delta: float, state_name: String = "") -> void:
+	"""
+	Updates BlendSpace2D based on input direction and movement speed.
+	
+	input_dir: Input vector (x = strafe, y = forward/back)
+	current_speed: Current movement speed (velocity magnitude)
+	max_speed: Maximum speed for this state (walk_speed or sprint_speed)
+	state_name: "Walk" or "Run" - determines which BlendSpace2D to update
+	
+	BlendSpace2D mapping:
+	- X axis: -1 = strafe left, 0 = no strafe, 1 = strafe right
+	- Y axis: -1 = backward, 0 = idle, 1 = forward
+	"""
+	
+	# Calculate blend position based on input direction
+	# Normalize speed to 0-1 range based on max speed
+	var speed_normalized = clamp(current_speed / max_speed, 0.0, 1.0) if max_speed > 0 else 0.0
+	
+	# Target blend position based on input direction and speed
+	var target_blend = Vector2.ZERO
+	if input_dir.length() > 0.1: # Dead zone
+		# X-axis: left/right strafing
+		target_blend.x = input_dir.x
+		# Y-axis: forward/backward movement (scaled by speed, negated because input_dir.y is negative for forward)
+		target_blend.y = - input_dir.y * speed_normalized
+	
+	# Smooth lerp to target blend position
+	current_blend_value = lerpf(current_blend_value, target_blend.y, blend_speed * delta)
+	current_blend_x = lerpf(current_blend_x, target_blend.x, blend_speed * delta)
+	
+	# Update AnimationTree BlendSpace2D
+	if animation_tree and state_name != "":
+		var blend_pos = Vector2(current_blend_x, current_blend_value)
+		
+		# Get the state machine playback to control state transitions
+		var playback = animation_tree.get(STATE_MACHINE_TRAVEL) as AnimationNodeStateMachinePlayback
+		
+		if state_name == "Walk":
+			# Travel to Walk state in the state machine
+			if playback and playback.get_current_node() != "Walk":
+				playback.travel("Walk")
+			animation_tree.set(WALK_BLEND_PARAM, blend_pos)
+		elif state_name == "Run":
+			# Travel to Run state in the state machine
+			if playback and playback.get_current_node() != "Run":
+				playback.travel("Run")
+			animation_tree.set(RUN_BLEND_PARAM, blend_pos)

@@ -8,6 +8,7 @@ class_name PlayerIdle
 
 func enter() -> void:
 	animation_name = "idle"
+	animation_name = "idle"
 	player.play_animation(animation_name)
 
 func update(_delta: float) -> void:
@@ -16,6 +17,10 @@ func update(_delta: float) -> void:
 			player.play_animation(animation_name)
 
 func physics_update(delta: float) -> void:
+	# Update blend value for idle - no input, no movement
+	var horizontal_velocity = Vector2(player.velocity.x, player.velocity.z).length()
+	player.update_blend_value(Vector2.ZERO, horizontal_velocity, player.walk_speed, delta, "Walk")
+	
 	if not player.is_on_floor():
 		state_machine.change_state(fall_state)
 		return

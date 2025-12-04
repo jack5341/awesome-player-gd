@@ -16,7 +16,13 @@ func update(_delta: float) -> void:
 		if not player.animation_player.is_playing() or player.animation_player.current_animation != animation_name:
 			player.play_animation(animation_name)
 
-func physics_update(_delta: float) -> void:
+func physics_update(delta: float) -> void:
+	var input_dir := Input.get_vector("awesome_player_move_left", "awesome_player_move_right", "awesome_player_move_up", "awesome_player_move_down")
+	var horizontal_velocity = Vector2(player.velocity.x, player.velocity.z).length()
+	
+	# Update blend value for walk with input direction and current speed
+	player.update_blend_value(input_dir, horizontal_velocity, player.walk_speed, delta, "Walk")
+	
 	if not player.is_on_floor():
 		state_machine.change_state(fall_state)
 		return
@@ -25,27 +31,23 @@ func physics_update(_delta: float) -> void:
 		state_machine.change_state(jump_state)
 		return
 		
-	if Input.is_action_pressed("awesome_player_move_sprint") and player.can_sprint:
-		state_machine.change_state(sprint_state)
-		return
-		
 	if Input.is_action_pressed("awesome_player_move_crouch"):
 		state_machine.change_state(crouch_state)
 		return
+	
+	if Input.is_action_pressed("awesome_player_move_sprint") and player.can_sprint:
+		# Allow sprint if stamina is not required, or if stamina is available
+		if not player.sprint_requires_stamina or (player.is_stamina_enabled and player.current_stamina > 0):
+			state_machine.change_state(sprint_state)
+			return
 
-	var input_dir := Input.get_vector("awesome_player_move_left", "awesome_player_move_right", "awesome_player_move_up", "awesome_player_move_down")
 	if input_dir == Vector2.ZERO:
-		player.velocity.x = 0.0
-		player.velocity.z = 0.0
 		state_machine.change_state(idle_state)
 		return
 	
 	var direction := (player.transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
 	if direction:
-		player.velocity.x = direction.x * player.walk_speed
-		player.velocity.z = direction.z * player.walk_speed
-	else:
-		player.velocity.x = 0.0
-		player.velocity.z = 0.0
+		player.velocity.x = move_toward(player.velocity.x, direction.x * player.walk_speed, player.acceleration * delta)
+		player.velocity.z = move_toward(player.velocity.z, direction.z * player.walk_speed, player.acceleration * delta)
 	
 	player.move_and_slide()
