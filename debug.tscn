@@ -48,5 +48,3 @@ use_collision = true
 size = Vector3(0.3, 1, 0.3)
 
 [node name="Player" parent="." instance=ExtResource("1_1uwqr")]
-wall_min_slide_angle = 0.0
-platform_on_leave = 2

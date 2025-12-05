@@ -48,7 +48,7 @@ func _initialize_slots() -> void:
 			push_warning("EquipmentManager: Attachment node '" + slot_name + "' not found in Skeleton3D.")
 
 ## Equips an item. Finds the corresponding slot mesh and updates it.
-func equip(item: EquipmentData) -> void:
+func equip(item: Equipment) -> void:
 	if not item:
 		return
 		

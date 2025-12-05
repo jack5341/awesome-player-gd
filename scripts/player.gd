@@ -116,11 +116,89 @@ var current_blend_value: float = 0.0 ## Current blend value for BlendSpace2D Y-a
 var current_blend_x: float = 0.0 ## Current blend value for BlendSpace2D X-axis (strafe: -1=left, 1=right)
 
 @export_group("Equipment")
-@export var helmet: EquipmentData = null
-@export var torso: EquipmentData = null
-@export var pant: EquipmentData = null
-@export var shoe: EquipmentData = null
-@export var backpack: EquipmentData = null
+@export var helmet: Helmet = null:
+	set(value):
+		var helmet_mesh = get_node("Skeleton3D/Helmet/MeshInstance3D")
+		helmet = value
+		if helmet:
+			helmet_mesh.mesh = helmet.mesh
+			helmet_mesh.position = helmet.position
+			helmet_mesh.rotation_degrees = helmet.rotation
+			helmet_mesh.scale = helmet.scale
+		else:
+			helmet_mesh.mesh = null
+			helmet_mesh.position = Vector3.ZERO
+			helmet_mesh.rotation_degrees = Vector3.ZERO
+			helmet_mesh.scale = Vector3.ONE
+
+@export var torso: Torso = null:
+	set(value):
+		var torso_mesh = get_node("Skeleton3D/Torso/MeshInstance3D")
+		torso = value
+		if torso:
+			torso_mesh.mesh = torso.mesh
+			torso_mesh.position = torso.position
+			torso_mesh.rotation_degrees = torso.rotation
+			torso_mesh.scale = torso.scale
+		else:
+			torso_mesh.mesh = null
+			torso_mesh.position = Vector3.ZERO
+			torso_mesh.rotation_degrees = Vector3.ZERO
+			torso_mesh.scale = Vector3.ONE
+
+@export var pant: Pant = null:
+	set(value):
+		var pant_mesh = get_node("Skeleton3D/Pant/MeshInstance3D")
+		pant = value
+		if pant:
+			pant_mesh.mesh = pant.mesh
+			pant_mesh.position = pant.position
+			pant_mesh.rotation_degrees = pant.rotation
+			pant_mesh.scale = pant.scale
+		else:
+			pant_mesh.mesh = null
+			pant_mesh.position = Vector3.ZERO
+			pant_mesh.rotation_degrees = Vector3.ZERO
+			pant_mesh.scale = Vector3.ONE
+
+@export var shoe: Shoe = null:
+	set(value):
+		var shoe_left_mesh = get_node("Skeleton3D/ShoeLeft/MeshInstance3D")
+		var shoe_right_mesh = get_node("Skeleton3D/ShoeRight/MeshInstance3D")
+		shoe = value
+		if shoe:
+			shoe_left_mesh.mesh = shoe.left_mesh
+			shoe_left_mesh.position = shoe.left_position
+			shoe_left_mesh.rotation_degrees = shoe.left_rotation
+			shoe_left_mesh.scale = shoe.left_scale
+			shoe_right_mesh.mesh = shoe.right_mesh
+			shoe_right_mesh.position = shoe.right_position
+			shoe_right_mesh.rotation_degrees = shoe.right_rotation
+			shoe_right_mesh.scale = shoe.right_scale
+		else:
+			shoe_left_mesh.mesh = null
+			shoe_left_mesh.position = Vector3.ZERO
+			shoe_left_mesh.rotation_degrees = Vector3.ZERO
+			shoe_left_mesh.scale = Vector3.ONE
+			shoe_right_mesh.mesh = null
+			shoe_right_mesh.position = Vector3.ZERO
+			shoe_right_mesh.rotation_degrees = Vector3.ZERO
+			shoe_right_mesh.scale = Vector3.ONE
+
+@export var backpack: Backpack = null:
+	set(value):
+		var backpack_mesh = get_node("Skeleton3D/Backpack/MeshInstance3D")
+		backpack = value
+		if backpack:
+			backpack_mesh.mesh = backpack.mesh
+			backpack_mesh.position = backpack.position
+			backpack_mesh.rotation_degrees = backpack.rotation
+			backpack_mesh.scale = backpack.scale
+		else:
+			backpack_mesh.mesh = null
+			backpack_mesh.position = Vector3.ZERO
+			backpack_mesh.rotation_degrees = Vector3.ZERO
+			backpack_mesh.scale = Vector3.ONE
 
 @onready var state_machine: StateMachine = $PlayerStateMachine
 @onready var camera: Camera3D = $CameraPivot/CameraSpringArm/PlayerCamera
@@ -129,12 +207,6 @@ var current_blend_x: float = 0.0 ## Current blend value for BlendSpace2D X-axis 
 @onready var inventory: InventoryManager = $InventoryManager
 @onready var interaction_raycast: RayCast3D = $CameraPivot/CameraSpringArm/PlayerCamera/InteractionRaycast
 @onready var animation_tree: AnimationTree = $AnimationTree
-
-@onready var helmet_mesh: MeshInstance3D = $Skeleton3D/Helmet/MeshInstance3D
-@onready var torso_mesh: MeshInstance3D = $Skeleton3D/Torso/MeshInstance3D
-@onready var pant_mesh: MeshInstance3D = $Skeleton3D/Pant/MeshInstance3D
-@onready var shoe_mesh: MeshInstance3D = $Skeleton3D/Shoe/MeshInstance3D
-@onready var backpack_mesh: MeshInstance3D = $Skeleton3D/Back/MeshInstance3D
 
 var equipment: EquipmentManager
 
@@ -148,7 +220,6 @@ func _ready() -> void:
 		
 		_setup_state_machine()
 		_setup_inventory()
-		#_setup_equipment()
 		#_setup_visuals()
 	
 	_setup_camera()
