@@ -123,6 +123,14 @@ var current_blend_x: float = 0.0 ## Current blend value for BlendSpace2D X-axis 
 @onready var interaction_raycast: RayCast3D = $CameraPivot/CameraSpringArm/PlayerCamera/InteractionRaycast
 @onready var animation_tree: AnimationTree = $AnimationTree
 
+@onready var helmet_mesh: MeshInstance3D = $Skeleton3D/Helmet/MeshInstance3D
+@onready var torso_mesh: MeshInstance3D = $Skeleton3D/Torso/MeshInstance3D
+@onready var pant_mesh: MeshInstance3D = $Skeleton3D/Pant/MeshInstance3D
+@onready var shoe_mesh: MeshInstance3D = $Skeleton3D/Shoe/MeshInstance3D
+@onready var backpack_mesh: MeshInstance3D = $Skeleton3D/Back/MeshInstance3D
+
+var equipment: EquipmentManager
+
 const BARE_HAND_LOCOMOTION_BLEND_PARAM = "parameters/BareHandLocomotion/blend_position"
 const STATE_MACHINE_TRAVEL = "parameters/playback"
 
@@ -133,6 +141,7 @@ func _ready() -> void:
 		
 		_setup_state_machine()
 		_setup_inventory()
+		#_setup_equipment()
 		#_setup_visuals()
 	
 	_setup_camera()
@@ -145,6 +154,17 @@ func _setup_inventory() -> void:
 	inventory.item_added.connect(_on_item_added)
 	inventory.item_removed.connect(_on_item_removed)
 	inventory.item_used.connect(_on_item_used)
+
+func _setup_equipment() -> void:
+	# EquipmentManager should be an existing child node from player.tscn, or we create it
+	equipment = get_node_or_null("EquipmentManager")
+	if not equipment:
+		equipment = EquipmentManager.new()
+		equipment.name = "EquipmentManager"
+		add_child(equipment)
+		# Force owner to self if we dynamically added it, so it can find us
+		if equipment.owner == null:
+			equipment.owner = self
 
 func _setup_state_machine() -> void:
 	if not state_machine.get_script():

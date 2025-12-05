@@ -6,7 +6,8 @@ class_name PlayerFall
 @export var jump_state: State
 
 func enter() -> void:
-	animation_name = "fall"
+	if true:
+		animation_name = "bare_hand_fall"
 	player.play_animation(animation_name)
 
 func update(_delta: float) -> void:

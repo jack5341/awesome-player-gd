@@ -6,7 +6,9 @@ class_name PlayerCrouch
 @export var fall_state: State
 
 func _ready() -> void:
-	animation_name = "crouch"
+	if true:
+		animation_name = "bare_hand_crouch"
+	player.play_animation(animation_name)
 
 func enter() -> void:
 	player.play_animation(animation_name)

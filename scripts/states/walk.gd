@@ -8,7 +8,8 @@ class_name PlayerWalk
 @export var crouch_state: State
 
 func enter() -> void:
-	animation_name = "walk"
+	if true:
+		animation_name = "bare_hand_walk"
 	player.play_animation(animation_name)
 
 func update(_delta: float) -> void:

@@ -5,7 +5,8 @@ class_name PlayerReload
 @export var walk_state: State
 
 func enter() -> void:
-	animation_name = "reload"
+	if true:
+		animation_name = "bare_hand_reload"
 	player.play_animation(animation_name)
 
 	# Placeholder for reload logic

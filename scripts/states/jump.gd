@@ -7,7 +7,9 @@ class_name PlayerJump
 
 
 func _ready() -> void:
-	animation_name = "jump"
+	if true:
+		animation_name = "bare_hand_jump"
+	player.play_animation(animation_name)
 
 func enter() -> void:
 	player.play_animation(animation_name)
