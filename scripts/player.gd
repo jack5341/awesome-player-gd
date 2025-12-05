@@ -115,6 +115,13 @@ var death_count: int = 0
 var current_blend_value: float = 0.0 ## Current blend value for BlendSpace2D Y-axis (forward/backward: -1 to 1)
 var current_blend_x: float = 0.0 ## Current blend value for BlendSpace2D X-axis (strafe: -1=left, 1=right)
 
+@export_group("Equipment")
+@export var helmet: EquipmentData = null
+@export var torso: EquipmentData = null
+@export var pant: EquipmentData = null
+@export var shoe: EquipmentData = null
+@export var backpack: EquipmentData = null
+
 @onready var state_machine: StateMachine = $PlayerStateMachine
 @onready var camera: Camera3D = $CameraPivot/CameraSpringArm/PlayerCamera
 @onready var camera_pivot: Node3D = $CameraPivot
