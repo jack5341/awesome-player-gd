@@ -7,14 +7,7 @@ class_name PlayerIdle
 @export var crouch_state: State
 
 func enter() -> void:
-	if true:
-		animation_name = "bare_hand_idle"
-	player.play_animation(animation_name)
-
-func update(_delta: float) -> void:
-	if animation_name and player.animation_player:
-		if not player.animation_player.is_playing() or player.animation_player.current_animation != animation_name:
-			player.play_animation(animation_name)
+	pass
 
 func physics_update(delta: float) -> void:
 	# Update blend value for idle - no input, no movement

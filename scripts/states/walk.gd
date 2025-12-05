@@ -8,14 +8,7 @@ class_name PlayerWalk
 @export var crouch_state: State
 
 func enter() -> void:
-	if true:
-		animation_name = "bare_hand_walk"
-	player.play_animation(animation_name)
-
-func update(_delta: float) -> void:
-	if animation_name and player.animation_player:
-		if not player.animation_player.is_playing() or player.animation_player.current_animation != animation_name:
-			player.play_animation(animation_name)
+	pass
 
 func physics_update(delta: float) -> void:
 	var input_dir := Input.get_vector("awesome_player_move_left", "awesome_player_move_right", "awesome_player_move_up", "awesome_player_move_down")

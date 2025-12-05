@@ -110,7 +110,6 @@ var death_count: int = 0
 @export var die_volume: float = 1.0 ## Volume level for die sounds (0.0 to 1.0)
 
 @export_group("Animation")
-@export var animation_player: AnimationPlayer ## Reference to the AnimationPlayer node
 @export var blend_speed: float = 8.0 ## Speed at which blend values lerp between states
 var current_blend_value: float = 0.0 ## Current blend value for BlendSpace2D Y-axis (forward/backward: -1 to 1)
 var current_blend_x: float = 0.0 ## Current blend value for BlendSpace2D X-axis (strafe: -1=left, 1=right)
@@ -399,12 +398,6 @@ func _on_item_used(item: InventoryItem) -> void:
 		current_health = min(current_health + float(item.data.metadata["heal_amount"]), max_health)
 	if item.data.metadata.has("stamina_amount"):
 		current_stamina = min(current_stamina + float(item.data.metadata["stamina_amount"]), max_stamina)
-
-func play_animation(anim_name: String, custom_blend: float = -1, custom_speed: float = 1.0, from_end: bool = false) -> void:
-	if animation_player and animation_player.has_animation(anim_name):
-		animation_player.play(anim_name, custom_blend, custom_speed, from_end)
-	elif animation_player:
-		push_warning("Animation not found: " + anim_name)
 
 func update_blend_value(input_dir: Vector2, speed_ratio: float, delta: float) -> void:
 	"""

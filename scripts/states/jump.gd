@@ -6,13 +6,7 @@ class_name PlayerJump
 @export var walk_state: State
 
 
-func _ready() -> void:
-	if true:
-		animation_name = "bare_hand_jump"
-	player.play_animation(animation_name)
-
 func enter() -> void:
-	player.play_animation(animation_name)
 	player.velocity.y = player.jump_velocity
 
 

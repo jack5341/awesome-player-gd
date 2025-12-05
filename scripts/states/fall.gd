@@ -6,14 +6,7 @@ class_name PlayerFall
 @export var jump_state: State
 
 func enter() -> void:
-	if true:
-		animation_name = "bare_hand_fall"
-	player.play_animation(animation_name)
-
-func update(_delta: float) -> void:
-	if animation_name and player.animation_player:
-		if not player.animation_player.is_playing() or player.animation_player.current_animation != animation_name:
-			player.play_animation(animation_name)
+	pass
 
 func physics_update(delta: float) -> void:
 	if player.is_on_floor():
