@@ -233,9 +233,11 @@ func _handle_camera_rotation(event: InputEventMouseMotion) -> void:
 	
 	camera_rotation_vertical = clamp(camera_rotation_vertical, deg_to_rad(-90), deg_to_rad(90))
 
-	var relative_horizontal = camera_rotation_horizontal - rotation.y
-	relative_horizontal = clamp(relative_horizontal, deg_to_rad(-90), deg_to_rad(90))
-	camera_rotation_horizontal = rotation.y + relative_horizontal
+	# Limit head horizontal movement to 180 degrees (+/- 90 degrees) relative to body
+	var relative_horizontal = wrapf(camera_rotation_horizontal - rotation.y, -PI, PI)
+	var clamped_relative = clamp(relative_horizontal, deg_to_rad(-90), deg_to_rad(90))
+	if relative_horizontal != clamped_relative:
+		camera_rotation_horizontal = rotation.y + clamped_relative
 
 func _update_camera(delta: float) -> void:
 	# Apply camera rotation
@@ -323,8 +325,8 @@ func update_blend_value(input_dir: Vector2, speed_ratio: float, delta: float) ->
 	var target_blend = Vector2.ZERO
 	if input_dir.length() > 0.1: # Dead zone
 		# X-axis: left/right strafing scaled by speed_ratio
-		# input_dir.x: -1 = left, 1 = right
-		target_blend.x = input_dir.x * speed_ratio
+		# Negated so left input plays left animation and right input plays right animation
+		target_blend.x = - input_dir.x * speed_ratio
 		
 		# Y-axis: forward/backward scaled by speed_ratio
 		# input_dir.y: -1 = forward, 1 = backward

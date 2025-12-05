@@ -253,6 +253,36 @@ func _remove_item_from_grid(item: InventoryItem) -> void:
 			if grid[y][x] == item:
 				grid[y][x] = null
 
+## Add capacity to inventory
+func add_capacity(extra_w: int, extra_h: int) -> void:
+	if inventory_type != InventoryType.GRID:
+		return
+	
+	var old_width = grid_width
+	var old_height = grid_height
+	
+	grid_width += extra_w
+	grid_height += extra_h
+	
+	# Resize height (rows)
+	grid.resize(grid_height)
+	
+	# For new rows, initialize
+	for y in range(old_height, grid_height):
+		grid[y] = []
+		grid[y].resize(grid_width)
+		for x in range(grid_width):
+			grid[y][x] = null
+			
+	# For existing rows, resize width
+	for y in range(old_height):
+		grid[y].resize(grid_width)
+		for x in range(old_width, grid_width):
+			grid[y][x] = null
+			
+	print("Inventory resized to: ", grid_width, "x", grid_height)
+	inventory_changed.emit()
+
 ## Debug
 func print_inventory() -> void:
 	print("=== Inventory ===")

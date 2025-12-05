@@ -1,0 +1,2 @@
+- Locomotion needs to be improved
+- Suddenly turning left or right while running or walking
