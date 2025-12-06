@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="Helmet" load_steps=4 format=3 uid="uid://c47ofmrx0cebn"]
 
 [ext_resource type="Script" uid="uid://dag0pwmki13c0" path="res://resources/stat_modifier_effect.gd" id="1_yp3ox"]
-[ext_resource type="ArrayMesh" uid="uid://bg0tw3p1q7ucn" path="res://helmet.res" id="2_bsp1d"]
+[ext_resource type="ArrayMesh" uid="uid://hx3gslmkjwcr" path="res://helmet.res" id="2_bsp1d"]
 [ext_resource type="Script" uid="uid://bei2bb47c5h3b" path="res://resources/equipment/helmet.gd" id="2_iwtxm"]
 
 [resource]

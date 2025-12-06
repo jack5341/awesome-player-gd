@@ -5,7 +5,6 @@ class_name PlayerJump
 @export var idle_state: State
 @export var walk_state: State
 
-
 func enter() -> void:
 	player.velocity.y = player.jump_velocity
 

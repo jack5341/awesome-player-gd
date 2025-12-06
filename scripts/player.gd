@@ -117,7 +117,9 @@ var current_blend_x: float = 0.0 ## Current blend value for BlendSpace2D X-axis 
 @export_group("Equipment")
 @export var helmet: Helmet = null:
 	set(value):
-		var helmet_mesh = get_node("Skeleton3D/Helmet/MeshInstance3D")
+		var helmet_mesh = get_node_or_null("Skeleton3D/Helmet/MeshInstance3D")
+		if not helmet_mesh:
+			return
 		helmet = value
 		if helmet:
 			helmet_mesh.mesh = helmet.mesh
@@ -132,7 +134,9 @@ var current_blend_x: float = 0.0 ## Current blend value for BlendSpace2D X-axis 
 
 @export var torso: Torso = null:
 	set(value):
-		var torso_mesh = get_node("Skeleton3D/Torso/MeshInstance3D")
+		var torso_mesh = get_node_or_null("Skeleton3D/Torso/MeshInstance3D")
+		if not torso_mesh:
+			return
 		torso = value
 		if torso:
 			torso_mesh.mesh = torso.mesh
@@ -147,7 +151,9 @@ var current_blend_x: float = 0.0 ## Current blend value for BlendSpace2D X-axis 
 
 @export var pant: Pant = null:
 	set(value):
-		var pant_mesh = get_node("Skeleton3D/Pant/MeshInstance3D")
+		var pant_mesh = get_node_or_null("Skeleton3D/Pant/MeshInstance3D")
+		if not pant_mesh:
+			return
 		pant = value
 		if pant:
 			pant_mesh.mesh = pant.mesh
@@ -162,8 +168,10 @@ var current_blend_x: float = 0.0 ## Current blend value for BlendSpace2D X-axis 
 
 @export var shoe: Shoe = null:
 	set(value):
-		var shoe_left_mesh = get_node("Skeleton3D/ShoeLeft/MeshInstance3D")
-		var shoe_right_mesh = get_node("Skeleton3D/ShoeRight/MeshInstance3D")
+		var shoe_left_mesh = get_node_or_null("Skeleton3D/ShoeLeft/MeshInstance3D")
+		var shoe_right_mesh = get_node_or_null("Skeleton3D/ShoeRight/MeshInstance3D")
+		if not shoe_left_mesh or not shoe_right_mesh:
+			return
 		shoe = value
 		if shoe:
 			shoe_left_mesh.mesh = shoe.left_mesh
@@ -186,7 +194,9 @@ var current_blend_x: float = 0.0 ## Current blend value for BlendSpace2D X-axis 
 
 @export var backpack: Backpack = null:
 	set(value):
-		var backpack_mesh = get_node("Skeleton3D/Backpack/MeshInstance3D")
+		var backpack_mesh = get_node_or_null("Skeleton3D/Backpack/MeshInstance3D")
+		if not backpack_mesh:
+			return
 		backpack = value
 		if backpack:
 			backpack_mesh.mesh = backpack.mesh
@@ -209,7 +219,8 @@ var current_blend_x: float = 0.0 ## Current blend value for BlendSpace2D X-axis 
 
 var equipment: EquipmentManager
 
-const BARE_HAND_LOCOMOTION_BLEND_PARAM = "parameters/BareHandLocomotion/blend_position"
+const BARE_HAND_LOCOMOTION_BLEND_PARAM = "parameters/bare_hand_locomotion/blend_position"
+const BARE_HAND_JUMP = "parameters/bare_hand_jump"
 const STATE_MACHINE_TRAVEL = "parameters/playback"
 
 func _ready() -> void:
@@ -219,7 +230,7 @@ func _ready() -> void:
 		
 		_setup_state_machine()
 		_setup_inventory()
-		#_setup_visuals()
+		# _setup_visuals()
 	
 	_setup_camera()
 	
