@@ -42,7 +42,7 @@ func physics_update(delta: float) -> void:
 		# input_dir.y > 0 means moving backward
 		if input_dir.y > 0:
 			pass # Don't allow sprint when moving backward, continue walking
-		elif not player.sprint_requires_stamina or (player.is_stamina_enabled and player.current_stamina > 0):
+		elif not player.sprint_requires_stamina or (player.stats and player.stats.current_stamina > 0):
 			state_machine.change_state(sprint_state)
 			return
 

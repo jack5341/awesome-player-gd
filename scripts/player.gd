@@ -2,34 +2,26 @@
 extends CharacterBody3D
 class_name Player
 
-signal health_changed(current_health: float, max_health: float)
-signal stamina_changed(current_stamina: float, max_stamina: float)
-signal dead()
-signal interacted(object: Node)
-signal interaction_focused(object: Node)
-signal interaction_unfocused()
+## Signals for external systems to connect to. These are also available via components.
+signal health_changed(current_health: float, max_health: float) ## Emitted when health changes (also available via stats.health_changed)
+signal stamina_changed(current_stamina: float, max_stamina: float) ## Emitted when stamina changes (also available via stats.stamina_changed)
+signal dead() ## Emitted when player dies (also available via stats.died)
+signal interacted(object: Node) ## Emitted when player interacts with an object (also available via interaction.interacted)
+signal interaction_focused(object: Node) ## Emitted when player focuses on an interactable (also available via interaction.focused)
+signal interaction_unfocused() ## Emitted when player unfocuses an interactable (also available via interaction.unfocused)
 
-@export_subgroup("Health & Stats")
-@export var max_health: float = 100.0 ## Maximum health points the player can have
-@export var current_health: float = 100.0: ## Current health points of the player
-	set(value):
-		current_health = value
-		if current_health <= 0:
-			is_dead = true
-			dead.emit()
-			return
-		health_changed.emit(current_health, max_health)
-@export var is_stamina_enabled: bool = true ## Whether the stamina system is active
-@export var max_stamina: float = 100.0 ## Maximum stamina points the player can have
-@export var current_stamina: float = 100.0: ## Current stamina points of the player
-	set(value):
-		current_stamina = value
-		stamina_changed.emit(current_stamina, max_stamina)
-@export var stamina_regen_rate: float = 10.0 ## Rate at which stamina regenerates per second
-@export var stamina_drain_rate: float = 20.0 ## Rate at which stamina drains per second when used
-@export var damage_multiplier: float = 1.0 ## Multiplier applied to all damage dealt by the player
+@export_group("Components")
+# Components can be assigned in editor or created dynamically
+@export var stats: StatsComponent
+@export var combat: CombatComponent
+@export var equipment: EquipmentManager
+@export var interaction: InteractionComponent
 
-@export_subgroup("Movement")
+@export_group("Inventory")
+@export var weight_system_enabled: bool = false ## Enable weight-based inventory limits
+@export var max_weight_limit: float = 50.0 ## Maximum weight capacity (0 = unlimited if weight_system_enabled is false)
+
+@export_group("Movement")
 @export var walk_speed: float = 5.0 ## Base walking speed in units per second
 @export var sprint_speed: float = 12.0 ## Sprinting speed when holding sprint key (consumes stamina)
 @export var crouch_speed: float = 2.5 ## Movement speed while crouching
@@ -38,24 +30,14 @@ signal interaction_unfocused()
 @export var rotation_speed: float = 10.0 ## How quickly the player rotates to face movement direction
 @export var air_control: float = 0.3 ## Movement control multiplier while in air (0.0 = no control, 1.0 = full control)
 @export var jump_count: int = 1 ## Current number of jumps available (for double/triple jump)
-@export var jump_velocity: float = 4.5 ## Current number of jumps available (for double/triple jump)
+@export var jump_velocity: float = 4.5 ## Vertical velocity applied when jumping
 @export var max_jumps: int = 1 ## Maximum number of jumps the player can perform
 @export var coyote_time: float = 0.2 ## Time window after leaving ground where jump is still allowed (in seconds)
 @export var can_sprint: bool = true ## Whether the player can sprint
 @export var sprint_requires_stamina: bool = true ## Whether sprinting requires stamina (if false, can sprint infinitely)
 
-@export_subgroup("Combat")
-@export var weapon: Weapon = null:
-	set(value):
-		weapon = value
-var last_attack_time: float = 0.0
 
-@export_subgroup("Interaction")
-@export var interaction_range: float = 3.0 ## Maximum distance the player can interact with objects
-@export var interaction_layer: int = 1 ## Physics layer mask for objects that can be interacted with
-var current_interactable: Node = null
-
-@export_subgroup("Camera")
+@export_group("Camera")
 @export var camera_sensitivity: float = 0.003 ## Mouse sensitivity for camera rotation
 @export var camera_fov: float = 75.0: ## Field of view angle for the camera
 	set(value):
@@ -85,129 +67,23 @@ var camera_rotation_horizontal: float = 0.0
 var camera_rotation_vertical: float = 0.0
 var camera_bob_time: float = 0.0
 
-@export_subgroup("Networking")
+@export_group("Networking")
 @export var username: String = "Player" ## Display name for this player in multiplayer
 @export var is_local_player: bool = true ## Whether this is the local player instance
 @export var player_id: int = -1 ## Unique identifier for this player in multiplayer sessions
 var is_network_authority: bool = false # Renamed to avoid shadowing Node.is_multiplayer_authority()
 
-@export_subgroup("Death & Respawn")
+@export_group("Death & Respawn")
 @export var respawn_time: float = 3.0 ## Time in seconds before player respawns after death
 @export var respawn_position: Vector3 = Vector3.ZERO ## World position where player respawns
 var is_dead: bool = false
 var death_count: int = 0
-
-@export_subgroup("Audio")
-@export var walk_sound: AudioStreamPlayer3D ## Audio player for walking footstep sounds
-@export var run_sound: AudioStreamPlayer3D ## Audio player for running footstep sounds
-@export var jump_sound: AudioStreamPlayer3D ## Audio player for jump sound effects
-@export var die_sound: AudioStreamPlayer3D ## Audio player for die sound effects
-
-@export_group("Audio Configuration")
-@export var walk_volume: float = 1.0 ## Volume level for walking sounds (0.0 to 1.0)
-@export var run_volume: float = 1.0 ## Volume level for running sounds (0.0 to 1.0)
-@export var jump_volume: float = 1.0 ## Volume level for jump sounds (0.0 to 1.0)
-@export var die_volume: float = 1.0 ## Volume level for die sounds (0.0 to 1.0)
 
 @export_group("Animation")
 @export var blend_speed: float = 8.0 ## Speed at which blend values lerp between states
 var current_blend_value: float = 0.0 ## Current blend value for BlendSpace2D Y-axis (forward/backward: -1 to 1)
 var current_blend_x: float = 0.0 ## Current blend value for BlendSpace2D X-axis (strafe: -1=left, 1=right)
 
-@export_group("Equipment")
-@export var helmet: Helmet = null:
-	set(value):
-		var helmet_mesh = get_node_or_null("Skeleton3D/Helmet/MeshInstance3D")
-		if not helmet_mesh:
-			return
-		helmet = value
-		if helmet:
-			helmet_mesh.mesh = helmet.mesh
-			helmet_mesh.position = helmet.position
-			helmet_mesh.rotation_degrees = helmet.rotation
-			helmet_mesh.scale = helmet.scale
-		else:
-			helmet_mesh.mesh = null
-			helmet_mesh.position = Vector3.ZERO
-			helmet_mesh.rotation_degrees = Vector3.ZERO
-			helmet_mesh.scale = Vector3.ONE
-
-@export var torso: Torso = null:
-	set(value):
-		var torso_mesh = get_node_or_null("Skeleton3D/Torso/MeshInstance3D")
-		if not torso_mesh:
-			return
-		torso = value
-		if torso:
-			torso_mesh.mesh = torso.mesh
-			torso_mesh.position = torso.position
-			torso_mesh.rotation_degrees = torso.rotation
-			torso_mesh.scale = torso.scale
-		else:
-			torso_mesh.mesh = null
-			torso_mesh.position = Vector3.ZERO
-			torso_mesh.rotation_degrees = Vector3.ZERO
-			torso_mesh.scale = Vector3.ONE
-
-@export var pant: Pant = null:
-	set(value):
-		var pant_mesh = get_node_or_null("Skeleton3D/Pant/MeshInstance3D")
-		if not pant_mesh:
-			return
-		pant = value
-		if pant:
-			pant_mesh.mesh = pant.mesh
-			pant_mesh.position = pant.position
-			pant_mesh.rotation_degrees = pant.rotation
-			pant_mesh.scale = pant.scale
-		else:
-			pant_mesh.mesh = null
-			pant_mesh.position = Vector3.ZERO
-			pant_mesh.rotation_degrees = Vector3.ZERO
-			pant_mesh.scale = Vector3.ONE
-
-@export var shoe: Shoe = null:
-	set(value):
-		var shoe_left_mesh = get_node_or_null("Skeleton3D/ShoeLeft/MeshInstance3D")
-		var shoe_right_mesh = get_node_or_null("Skeleton3D/ShoeRight/MeshInstance3D")
-		if not shoe_left_mesh or not shoe_right_mesh:
-			return
-		shoe = value
-		if shoe:
-			shoe_left_mesh.mesh = shoe.left_mesh
-			shoe_left_mesh.position = shoe.left_position
-			shoe_left_mesh.rotation_degrees = shoe.left_rotation
-			shoe_left_mesh.scale = shoe.left_scale
-			shoe_right_mesh.mesh = shoe.right_mesh
-			shoe_right_mesh.position = shoe.right_position
-			shoe_right_mesh.rotation_degrees = shoe.right_rotation
-			shoe_right_mesh.scale = shoe.right_scale
-		else:
-			shoe_left_mesh.mesh = null
-			shoe_left_mesh.position = Vector3.ZERO
-			shoe_left_mesh.rotation_degrees = Vector3.ZERO
-			shoe_left_mesh.scale = Vector3.ONE
-			shoe_right_mesh.mesh = null
-			shoe_right_mesh.position = Vector3.ZERO
-			shoe_right_mesh.rotation_degrees = Vector3.ZERO
-			shoe_right_mesh.scale = Vector3.ONE
-
-@export var backpack: Backpack = null:
-	set(value):
-		var backpack_mesh = get_node_or_null("Skeleton3D/Backpack/MeshInstance3D")
-		if not backpack_mesh:
-			return
-		backpack = value
-		if backpack:
-			backpack_mesh.mesh = backpack.mesh
-			backpack_mesh.position = backpack.position
-			backpack_mesh.rotation_degrees = backpack.rotation
-			backpack_mesh.scale = backpack.scale
-		else:
-			backpack_mesh.mesh = null
-			backpack_mesh.position = Vector3.ZERO
-			backpack_mesh.rotation_degrees = Vector3.ZERO
-			backpack_mesh.scale = Vector3.ONE
 
 @onready var state_machine: StateMachine = $PlayerStateMachine
 @onready var camera: Camera3D = $CameraPivot/CameraSpringArm/PlayerCamera
@@ -217,7 +93,6 @@ var current_blend_x: float = 0.0 ## Current blend value for BlendSpace2D X-axis 
 @onready var interaction_raycast: RayCast3D = $CameraPivot/CameraSpringArm/PlayerCamera/InteractionRaycast
 @onready var animation_tree: AnimationTree = $AnimationTree
 
-var equipment: EquipmentManager
 
 const BARE_HAND_LOCOMOTION_BLEND_PARAM = "parameters/bare_hand_locomotion/blend_position"
 const BARE_HAND_JUMP = "parameters/bare_hand_jump"
@@ -228,36 +103,61 @@ func _ready() -> void:
 		if mouse_capture_enabled:
 			Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 		
+		_setup_components()
 		_setup_state_machine()
-		_setup_inventory()
 		# _setup_visuals()
 	
 	_setup_camera()
 	
-func _setup_inventory() -> void:
-	# Auto-attach script if missing
-	if not inventory.get_script():
-		inventory.set_script(load("res://scripts/inventory/inventory_manager.gd"))
+## Sets up all modular components. Components can be assigned in editor or will be auto-created.
+func _setup_components() -> void:
+	# 1. Stats Component - Handles health and stamina
+	if not stats:
+		stats = get_node_or_null("StatsComponent")
+	if not stats:
+		stats = StatsComponent.new()
+		stats.name = "StatsComponent"
+		add_child(stats)
 	
-	inventory.item_added.connect(_on_item_added)
-	inventory.item_removed.connect(_on_item_removed)
-	inventory.item_used.connect(_on_item_used)
+	# 2. Combat Component - Handles weapon equipping
+	if not combat:
+		combat = get_node_or_null("CombatComponent")
+	if not combat:
+		combat = CombatComponent.new()
+		combat.name = "CombatComponent"
+		add_child(combat)
+		
+	# 3. Inventory Manager - Configure weight limits if enabled
+	if inventory:
+		if not inventory.get_script():
+			inventory.set_script(load("res://scripts/inventory/inventory_manager.gd"))
+		inventory.max_weight = max_weight_limit if weight_system_enabled else 0.0
 
-func _setup_equipment() -> void:
-	# EquipmentManager should be an existing child node from player.tscn, or we create it
-	equipment = get_node_or_null("EquipmentManager")
+	# 4. Equipment Manager - Manages visual equipment and stat modifiers
+	if not equipment:
+		equipment = get_node_or_null("EquipmentManager")
 	if not equipment:
 		equipment = EquipmentManager.new()
 		equipment.name = "EquipmentManager"
 		add_child(equipment)
-		# Force owner to self if we dynamically added it, so it can find us
-		if equipment.owner == null:
-			equipment.owner = self
+		if equipment.owner == null: equipment.owner = self
+	
+	# 5. Interaction Component - Raycast-based interaction system
+	if not interaction:
+		interaction = get_node_or_null("InteractionComponent")
+	if not interaction:
+		interaction = InteractionComponent.new()
+		interaction.name = "InteractionComponent"
+		interaction.interaction_raycast_path = "CameraPivot/CameraSpringArm/PlayerCamera/InteractionRaycast"
+		interaction.camera_path = "CameraPivot/CameraSpringArm/PlayerCamera"
+		add_child(interaction)
 
+## Sets up the state machine and auto-attaches scripts to state nodes.
 func _setup_state_machine() -> void:
 	if not state_machine.get_script():
 		state_machine.set_script(load("res://scripts/state_machine.gd"))
 	
+	# Map state node names to their script paths for auto-attachment
 	var states_map = {
 		"Idle": "res://scripts/states/idle.gd",
 		"Walk": "res://scripts/states/walk.gd",
@@ -268,6 +168,7 @@ func _setup_state_machine() -> void:
 		"Reload": "res://scripts/states/reload.gd"
 	}
 	
+	# Auto-attach scripts to state nodes if they don't have one
 	for child in state_machine.get_children():
 		if states_map.has(child.name) and not child.get_script():
 			child.set_script(load(states_map[child.name]))
@@ -294,7 +195,7 @@ func _setup_visuals() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if Engine.is_editor_hint():
 		return
-		
+	
 	if event.is_action_pressed("ui_cancel"): # ESC key
 		if Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED:
 			Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
@@ -321,7 +222,6 @@ func _physics_process(delta: float) -> void:
 	if state_machine:
 		state_machine._physics_process(delta)
 	
-	_handle_interaction()
 
 func _process(delta: float) -> void:
 	if Engine.is_editor_hint():
@@ -330,7 +230,6 @@ func _process(delta: float) -> void:
 	if state_machine:
 		state_machine._process(delta)
 	
-	_handle_stamina(delta)
 	_update_camera(delta)
 
 func _handle_camera_rotation(event: InputEventMouseMotion) -> void:
@@ -363,52 +262,17 @@ func _update_camera(delta: float) -> void:
 			camera_bob_time = 0.0
 			camera.position.y = move_toward(camera.position.y, 0.0, delta)
 
-func _handle_stamina(delta: float) -> void:
-	if is_stamina_enabled and current_stamina < max_stamina:
-		current_stamina = min(current_stamina + stamina_regen_rate * delta, max_stamina)
+	if Input.is_action_just_pressed("awesome_player_interact"):
+		if interaction:
+			interaction.interact()
 
-func _handle_interaction() -> void:
-	if not camera: return
-	
-	var space_state = get_world_3d().direct_space_state
-	var from = camera.global_position
-	var to = from - camera.global_transform.basis.z * interaction_range
-	
-	var query = PhysicsRayQueryParameters3D.create(from, to)
-	query.collision_mask = interaction_layer
-	query.exclude = [self.get_rid()]
-	
-	var result = space_state.intersect_ray(query)
-	
-	if result:
-		if current_interactable != result.collider:
-			current_interactable = result.collider
-			interaction_focused.emit(current_interactable)
-	elif current_interactable:
-		current_interactable = null
-		interaction_unfocused.emit()
-	
-	# Handle interaction input
-	if Input.is_action_just_pressed("awesome_player_interact") and current_interactable:
-		_interact_with_object(current_interactable)
-
-func _interact_with_object(object: Node) -> void:
-	interacted.emit(object)
-	if object.has_method("interact"):
-		object.interact(self)
-
+## Called when an item is added to inventory. Override or connect signals for custom behavior.
 func _on_item_added(_item: InventoryItem, _slot: int) -> void:
-	pass # Override or connect to this for UI updates
+	pass
 
+## Called when an item is removed from inventory. Override or connect signals for custom behavior.
 func _on_item_removed(_item: InventoryItem, _slot: int) -> void:
-	pass # Override or connect to this for UI updates
-
-func _on_item_used(item: InventoryItem) -> void:
-	# Handle item usage effects
-	if item.data.metadata.has("heal_amount"):
-		current_health = min(current_health + float(item.data.metadata["heal_amount"]), max_health)
-	if item.data.metadata.has("stamina_amount"):
-		current_stamina = min(current_stamina + float(item.data.metadata["stamina_amount"]), max_stamina)
+	pass
 
 func update_blend_value(input_dir: Vector2, speed_ratio: float, delta: float) -> void:
 	"""

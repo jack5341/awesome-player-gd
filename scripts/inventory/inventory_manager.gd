@@ -286,7 +286,7 @@ func add_capacity(extra_w: int, extra_h: int) -> void:
 ## Debug
 func print_inventory() -> void:
 	print("=== Inventory ===")
-	print("Weight: ", current_weight, "/", max_weight if max_weight > 0 else "∞")
+	print("Weight: ", current_weight, "/", str(max_weight) if max_weight > 0 else "∞")
 	if inventory_type == InventoryType.GRID:
 		print("Grid: ", grid_width, "x", grid_height)
 		for item in items:

@@ -46,10 +46,9 @@ func physics_update(delta: float) -> void:
 		return
 	
 	# Handle Stamina - ONLY drain if sprint_requires_stamina is true AND stamina is enabled
-	if player.sprint_requires_stamina and player.is_stamina_enabled:
-		player.current_stamina -= player.stamina_drain_rate * delta
-		if player.current_stamina <= 0:
-			player.current_stamina = 0
+	if player.sprint_requires_stamina and player.stats:
+		var required = player.stats.stamina_drain_rate * delta
+		if not player.stats.consume_stamina(required):
 			# Transition to walk state so player keeps moving
 			state_machine.change_state(walk_state)
 			return

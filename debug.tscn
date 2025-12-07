@@ -1,7 +1,6 @@
-[gd_scene load_steps=7 format=3 uid="uid://btkmufqw42jtm"]
+[gd_scene load_steps=6 format=3 uid="uid://btkmufqw42jtm"]
 
-[ext_resource type="PackedScene" uid="uid://bfcju82um8mqx" path="res://player.tscn" id="1_1uwqr"]
-[ext_resource type="Script" uid="uid://dcxynqy33aw8b" path="res://rigid_body_3d.gd" id="2_lvjdj"]
+[ext_resource type="PackedScene" uid="uid://csg5ebqwqpxut" path="res://player.tscn" id="1_1uwqr"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_110fs"]
 sky_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
@@ -49,7 +48,3 @@ use_collision = true
 size = Vector3(0.3, 1, 0.3)
 
 [node name="Player" parent="." instance=ExtResource("1_1uwqr")]
-
-[node name="RigidBody3D" type="RigidBody3D" parent="."]
-script = ExtResource("2_lvjdj")
-prompt_message = "Interact With This Body"
